@@ -1,0 +1,30 @@
+{
+  "name": "study-abroad-life-toolkit",
+  "version": "0.1.0",
+  "private": true,
+  "main": "expo-router/entry",
+  "scripts": {
+    "start": "set \"EXPO_NO_TELEMETRY=1\" && set \"__UNSAFE_EXPO_HOME_DIRECTORY=%CD%\\.expo-home\" && expo start",
+    "android": "set \"EXPO_NO_TELEMETRY=1\" && set \"__UNSAFE_EXPO_HOME_DIRECTORY=%CD%\\.expo-home\" && expo start --android",
+    "ios": "set \"EXPO_NO_TELEMETRY=1\" && set \"__UNSAFE_EXPO_HOME_DIRECTORY=%CD%\\.expo-home\" && expo start --ios",
+    "web": "set \"EXPO_NO_TELEMETRY=1\" && set \"__UNSAFE_EXPO_HOME_DIRECTORY=%CD%\\.expo-home\" && expo start --web",
+    "export:web": "set \"EXPO_NO_TELEMETRY=1\" && set \"__UNSAFE_EXPO_HOME_DIRECTORY=%CD%\\.expo-home\" && expo export --platform web --output-dir dist",
+    "serve:dist": "node scripts/serve-dist.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "expo": "~56.0.0",
+    "expo-router": "~56.2.8",
+    "expo-status-bar": "~3.0.0",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-native": "0.85.2",
+    "react-native-safe-area-context": "~5.6.0",
+    "react-native-screens": "~4.16.0",
+    "react-native-web": "~0.21.0"
+  },
+  "devDependencies": {
+    "@types/react": "~19.2.0",
+    "typescript": "~5.9.2"
+  }
+}

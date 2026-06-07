@@ -1,0 +1,21 @@
+{
+  "expo": {
+    "name": "海外留学生活助手",
+    "slug": "study-abroad-life-toolkit",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "studyabroadtoolkit",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "plugins": ["expo-router"],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "edgeToEdgeEnabled": true
+    },
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}
