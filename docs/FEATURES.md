@@ -316,7 +316,6 @@ Not planned:
 
 - Login or registration.
 - Cloud sync.
-- AI chat.
 - Email templates.
 - Community forum.
 - Map search for local services.
@@ -329,7 +328,6 @@ Not planned:
 
 - 登录或注册。
 - 云端同步。
-- AI 聊天。
 - 邮件模板。
 - 社区论坛。
 - 地图搜索本地服务。
@@ -361,4 +359,3 @@ Possible later additions:
 - 暗色模式。
 - iCloud / Google Drive 备份。
 - 不同国家或地区的默认 checklist。
-

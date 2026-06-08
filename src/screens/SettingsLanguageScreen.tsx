@@ -1,21 +1,27 @@
+import { router } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { AppIcon } from "../components/AppIcon";
-import { Card } from "../components/Card";
 import { Screen } from "../components/Screen";
 import { useLanguage } from "../i18n";
 import type { AppLanguage } from "../types";
-import { colors, spacing } from "../utils/theme";
+import { colors, radii, spacing } from "../utils/theme";
 
 const languages: Array<{ code: AppLanguage; label: string; caption: string }> = [
-  { code: "zh", label: "中文", caption: "海外留学生活助手" },
-  { code: "en", label: "English", caption: "Study Abroad Life Toolkit" }
+  { code: "zh", label: "简体中文", caption: "简体中文" },
+  { code: "en", label: "English", caption: "English" }
 ];
 
 export function SettingsLanguageScreen() {
   const { language, setLanguage, t } = useLanguage();
 
   return (
-    <Screen title={t("language")}>
+    <Screen>
+      <View style={styles.topRow}>
+        <Pressable style={styles.backButton} onPress={() => router.back()}>
+          <Text style={styles.backText}>‹</Text>
+        </Pressable>
+        <Text style={styles.title}>{t("language")}</Text>
+      </View>
+
       <View style={styles.languageList}>
         {languages.map((item) => {
           const selected = item.code === language;
@@ -26,91 +32,99 @@ export function SettingsLanguageScreen() {
               onPress={() => setLanguage(item.code)}
               style={[styles.languageCard, selected && styles.selectedCard]}
             >
-              <AppIcon name="language" color={selected ? colors.primary : colors.mutedText} size={36} />
               <View style={styles.languageText}>
                 <Text style={styles.languageTitle}>{item.label}</Text>
                 <Text style={styles.caption}>{item.caption}</Text>
               </View>
-              <View style={[styles.statusBox, selected ? styles.successStatusBox : styles.neutralStatusBox]}>
-                <Text style={styles.statusLabel}>{t("status")}</Text>
-                <Text style={styles.statusValue}>{selected ? t("selected") : t("tapToChange")}</Text>
-              </View>
+              {selected ? (
+                <View style={styles.checkCircle}>
+                  <Text style={styles.checkText}>✓</Text>
+                </View>
+              ) : null}
             </Pressable>
           );
         })}
       </View>
 
-      <Card>
-        <Text style={styles.infoTitle}>{t("appDisplayName")}</Text>
-        <Text style={styles.infoText}>{t("projectTypeValue")}</Text>
-      </Card>
+      <Text style={styles.helper}>{language === "zh" ? "更改语言后将立即生效" : "Language changes apply immediately"}</Text>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
+  topRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
+    paddingTop: spacing.xl
+  },
+  backButton: {
+    width: 42,
+    height: 42,
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  backText: {
+    color: colors.text,
+    fontSize: 40,
+    fontWeight: "300",
+    lineHeight: 40
+  },
+  title: {
+    color: colors.text,
+    fontSize: 30,
+    fontWeight: "700"
+  },
   languageList: {
     gap: spacing.md
   },
   languageCard: {
+    minHeight: 112,
+    flexDirection: "row",
+    alignItems: "center",
     gap: spacing.md,
-    padding: spacing.lg,
+    padding: spacing.xl,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 8,
+    borderRadius: radii.md,
     backgroundColor: colors.surface
   },
   selectedCard: {
-    borderColor: colors.primary,
-    backgroundColor: colors.primarySoft
+    borderWidth: 2,
+    borderColor: colors.primary
   },
   languageText: {
+    flex: 1,
     gap: spacing.xs
   },
   languageTitle: {
     color: colors.text,
-    fontSize: 18,
-    fontWeight: "900"
+    fontSize: 22,
+    fontWeight: "700"
   },
   caption: {
     color: colors.mutedText,
-    fontSize: 13,
-    lineHeight: 18
+    fontSize: 16,
+    fontWeight: "700"
   },
-  statusBox: {
-    minHeight: 54,
+  checkCircle: {
+    width: 38,
+    height: 38,
+    alignItems: "center",
     justifyContent: "center",
-    gap: 2,
-    paddingHorizontal: spacing.md,
-    borderRadius: 8,
-    borderWidth: 1
+    borderRadius: 19,
+    backgroundColor: colors.primary
   },
-  successStatusBox: {
-    borderColor: colors.success,
-    backgroundColor: colors.successSoft
+  checkText: {
+    color: "#ffffff",
+    fontSize: 22,
+    fontWeight: "700"
   },
-  neutralStatusBox: {
-    borderColor: colors.border,
-    backgroundColor: colors.neutralSoft
-  },
-  statusLabel: {
+  helper: {
+    marginTop: spacing.xl,
     color: colors.mutedText,
-    fontSize: 12,
-    fontWeight: "800"
-  },
-  statusValue: {
-    color: colors.text,
     fontSize: 16,
-    fontWeight: "900"
-  },
-  infoTitle: {
-    color: colors.text,
-    fontSize: 16,
-    fontWeight: "900"
-  },
-  infoText: {
-    color: colors.mutedText,
-    fontSize: 14,
-    lineHeight: 20
+    fontWeight: "700",
+    textAlign: "center"
   }
 });

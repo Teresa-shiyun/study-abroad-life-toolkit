@@ -1,6 +1,6 @@
 # Default Content / 默认内容
 
-This document lists default labels and starter content for the first version. All examples should stay fictional.
+This document lists default labels and starter content for the first version. Public project materials should stay non-private and screen-safe.
 
 本文档整理第一版可使用的默认文案和初始内容。所有示例都应使用虚拟数据。
 
@@ -136,11 +136,11 @@ These items are starter examples for common UK student life tasks.
 | amount | Amount | 金额 |
 | date | Date | 日期 |
 
-## Demo Content Rule / Demo 内容规则
+## Public Content Rule / 公开内容规则
 
-All demo content must be fictional. Public screenshots, README examples, and test data should use placeholder images, mock documents, and fake records only.
+Public screenshots, README examples, and test data should use non-private project data and screen-safe preview documents only.
 
-所有 demo 内容都必须是虚拟的。公开截图、README 示例和测试数据只能使用占位图、模拟文件和虚拟记录。
+公开截图、README 示例和测试数据只能使用非隐私项目数据和安全的预览文件。
 
 Do not use real passport photos, real visa screenshots, real BRP/eVisa records, real bank letters, real tickets, real hotel bookings, real addresses, or real contact details.
 

@@ -14,7 +14,7 @@ export function AddEditTripScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const { saveTrip, trips } = useAppData();
   const trip = trips.find((item) => item.id === id);
-  const [name, setName] = useState(trip ? t(`mock.${trip.id}`, trip.name) : "");
+  const [name, setName] = useState(trip ? t(`seed.${trip.id}`, trip.name) : "");
   const [destination, setDestination] = useState(trip?.destination ?? "");
   const [startDate, setStartDate] = useState(trip?.startDate ?? "");
   const [endDate, setEndDate] = useState(trip?.endDate ?? "");
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
   label: {
     color: colors.text,
     fontSize: 13,
-    fontWeight: "800"
+    fontWeight: "600"
   },
   input: {
     minHeight: 44,

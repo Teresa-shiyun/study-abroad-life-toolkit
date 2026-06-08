@@ -10,6 +10,7 @@ import { Screen } from "../components/Screen";
 import { useAppData } from "../data/AppDataContext";
 import { useLanguage } from "../i18n";
 import { routes } from "../navigation/routes";
+import { deriveDocumentStatus } from "../utils/documentStatus";
 import { isImageFile, openPickedFile, pickFile } from "../utils/filePicker";
 import { getDocumentStatusTone } from "../utils/statusTone";
 import { colors, spacing } from "../utils/theme";
@@ -46,7 +47,6 @@ export function DocumentDetailScreen() {
 
     saveDocument({
       ...document,
-      status: "prepared",
       fileName: selectedFile.name,
       fileType: selectedFile.type,
       fileUri: selectedFile.uri
@@ -66,13 +66,13 @@ export function DocumentDetailScreen() {
   }
 
   return (
-    <Screen title={t("documentDetail")} subtitle={t(`mock.${document.id}`, document.title)}>
+    <Screen title={t("documentDetail")} subtitle={t(`seed.${document.id}`, document.title)}>
       <Card>
         <View style={styles.row}>
-          <Text style={styles.title}>{t(`mock.${document.id}`, document.title)}</Text>
+          <Text style={styles.title}>{t(`seed.${document.id}`, document.title)}</Text>
           <Pill
-            label={t(`documentStatus.${document.status}`)}
-            tone={getDocumentStatusTone(document.status)}
+            label={t(`documentStatus.${deriveDocumentStatus(document)}`)}
+            tone={getDocumentStatusTone(deriveDocumentStatus(document))}
           />
         </View>
         <InfoRow label={t("category")} value={t(`documentCategory.${document.category}`)} />
@@ -82,7 +82,7 @@ export function DocumentDetailScreen() {
       </Card>
 
       <View style={styles.preview}>
-        <Text style={styles.previewTitle}>{t("mockFilePreview")}</Text>
+        <Text style={styles.previewTitle}>{t("filePreview")}</Text>
         {documentIsImage ? (
           <Image
             source={{ uri: document.fileUri }}
@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
     flex: 1,
     color: colors.text,
     fontSize: 18,
-    fontWeight: "800"
+    fontWeight: "600"
   },
   preview: {
     minHeight: 150,
@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
   previewTitle: {
     color: colors.text,
     fontSize: 16,
-    fontWeight: "800"
+    fontWeight: "600"
   },
   previewImage: {
     width: "100%",
@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
   notice: {
     color: colors.primary,
     fontSize: 13,
-    fontWeight: "800"
+    fontWeight: "600"
   },
   actions: {
     flexDirection: "row",

@@ -106,6 +106,6 @@ The first version should include planning and later implementation for:
 - 中英文切换。
 - 仅本地保存数据。
 
-First-version work should not include login, cloud sync, AI chat, community features, map search, or professional advice features.
+First-version work should not include login, cloud sync, community features, map search, or professional advice features.
 
-第一版不做登录、云同步、AI 聊天、社区功能、地图搜索，也不做任何专业建议类功能。
+第一版不做登录、云同步、社区功能、地图搜索，也不做任何专业建议类功能。

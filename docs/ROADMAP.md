@@ -84,11 +84,11 @@ Tasks:
 
 Status:
 
-Completed with Expo Router, local mock data, and a clear `app/` + `src/` structure.
+Completed with Expo Router, local seed data, and a clear `app/` + `src/` structure.
 
 状态：
 
-已完成。当前使用 Expo Router、本地 mock data，以及清晰的 `app/` + `src/` 结构。
+已完成。当前使用 Expo Router、本地初始数据，以及清晰的 `app/` + `src/` 结构。
 
 ## Phase 3: Static Screens And Navigation / 静态页面与导航
 
@@ -224,7 +224,7 @@ Make the repository clear for GitHub readers.
 
 Tasks:
 
-- Add screenshots using fictional data only.
+- Add screenshots using screen-safe project data only.
 - Update run instructions.
 - Review docs for consistency.
 - Add privacy reminders.

@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
   },
   addText: {
     fontSize: 22,
-    fontWeight: "900",
+    fontWeight: "700",
     lineHeight: 24
   },
   trashWrap: {

@@ -8,6 +8,7 @@ import { useAppData } from "../data/AppDataContext";
 import { useLanguage } from "../i18n";
 import { routes } from "../navigation/routes";
 import type { SearchResultType } from "../types";
+import { deriveDocumentStatus } from "../utils/documentStatus";
 import { formatCurrency, formatDateRange } from "../utils/format";
 import { colors, spacing } from "../utils/theme";
 
@@ -30,21 +31,21 @@ export function SearchScreen() {
       ...documents.map((document) => ({
         id: document.id,
         type: "Documents" as SearchResultType,
-        title: t(`mock.${document.id}`, document.title),
-        subtitle: `${t(`documentCategory.${document.category}`)} · ${t(`documentStatus.${document.status}`)}`,
+        title: t(`seed.${document.id}`, document.title),
+        subtitle: `${t(`documentCategory.${document.category}`)} · ${t(`documentStatus.${deriveDocumentStatus(document)}`)}`,
         open: () => router.push(routes.documentDetail(document.id))
       })),
       ...checklistItems.map((item) => ({
         id: item.id,
         type: "Checklist" as SearchResultType,
-        title: t(`mock.${item.id}`, item.title),
+        title: t(`seed.${item.id}`, item.title),
         subtitle: `${t(`category.${item.category}`)} · ${t(`status.${item.status}`)}`,
         open: () => router.push(routes.checklist)
       })),
       ...trips.map((trip) => ({
         id: trip.id,
         type: "Trips" as SearchResultType,
-        title: t(`mock.${trip.id}`, trip.name),
+        title: t(`seed.${trip.id}`, trip.name),
         subtitle: `${trip.destination} · ${formatDateRange(trip.startDate, trip.endDate)}`,
         open: () => router.push(routes.travelDetail(trip.id))
       })),
@@ -58,7 +59,7 @@ export function SearchScreen() {
       ...emergencyContacts.map((contact) => ({
         id: contact.id,
         type: "Contacts" as SearchResultType,
-        title: t(`mock.${contact.id}`, contact.name),
+        title: t(`seed.${contact.id}`, contact.name),
         subtitle: contact.phone ?? contact.email ?? t(`contactCategory.${contact.category}`),
         open: () => router.push(routes.emergency)
       }))
@@ -148,12 +149,12 @@ const styles = StyleSheet.create({
     flex: 1,
     color: colors.text,
     fontSize: 16,
-    fontWeight: "800"
+    fontWeight: "600"
   },
   type: {
     color: colors.primary,
     fontSize: 12,
-    fontWeight: "800"
+    fontWeight: "600"
   },
   text: {
     color: colors.mutedText,

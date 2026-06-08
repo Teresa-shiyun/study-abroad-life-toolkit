@@ -78,18 +78,7 @@ function FileIcon({ color }: { color: ColorValue }) {
 }
 
 function TransportIcon({ color }: { color: ColorValue }) {
-  return (
-    <View style={styles.transportWrap}>
-      <View style={[styles.vehicleBody, { borderColor: color }]}>
-        <View style={[styles.vehicleWindow, { backgroundColor: color }]} />
-        <View style={[styles.vehicleWindow, { backgroundColor: color }]} />
-      </View>
-      <View style={styles.wheels}>
-        <View style={[styles.wheel, { backgroundColor: color }]} />
-        <View style={[styles.wheel, { backgroundColor: color }]} />
-      </View>
-    </View>
-  );
+  return <Text style={[styles.glyphIcon, { color }]}>✈</Text>;
 }
 
 function WalletIcon({ color }: { color: ColorValue }) {
@@ -102,18 +91,13 @@ function WalletIcon({ color }: { color: ColorValue }) {
 }
 
 function EmergencyIcon({ color }: { color: ColorValue }) {
-  return (
-    <View style={[styles.emergencyCircle, { borderColor: color }]}>
-      <View style={[styles.crossVertical, { backgroundColor: color }]} />
-      <View style={[styles.crossHorizontal, { backgroundColor: color }]} />
-    </View>
-  );
+  return <Text style={[styles.glyphIcon, { color }]}>☎</Text>;
 }
 
 function LanguageIcon({ color }: { color: ColorValue }) {
   return (
     <View style={[styles.languageCircle, { borderColor: color }]}>
-      <Text style={[styles.languageGlyph, { color }]}>文</Text>
+      <Text style={[styles.languageGlyph, { color }]}>A</Text>
     </View>
   );
 }
@@ -132,6 +116,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: radii.md
+  },
+  glyphIcon: {
+    fontSize: 27,
+    fontWeight: "700",
+    lineHeight: 32
   },
   canvas: {
     width: 40,
@@ -306,7 +295,7 @@ const styles = StyleSheet.create({
   },
   languageGlyph: {
     fontSize: 14,
-    fontWeight: "900"
+    fontWeight: "700"
   },
   searchCircle: {
     position: "absolute",

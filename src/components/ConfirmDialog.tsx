@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
   title: {
     color: colors.text,
     fontSize: 18,
-    fontWeight: "900"
+    fontWeight: "700"
   },
   message: {
     color: colors.mutedText,

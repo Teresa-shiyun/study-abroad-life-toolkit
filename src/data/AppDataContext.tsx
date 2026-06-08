@@ -1,12 +1,12 @@
 import { createContext, type ReactNode, useContext, useState } from "react";
 import {
-  mockBudgetItems,
-  mockChecklistItems,
-  mockDocuments,
-  mockEmergencyContacts,
-  mockMonthlyBudget,
-  mockTrips
-} from "./mockData";
+  seedBudgetItems,
+  seedChecklistItems,
+  seedDocuments,
+  seedEmergencyContacts,
+  seedMonthlyBudget,
+  seedTrips
+} from "./seedData";
 import type {
   BudgetCategory,
   BudgetItem,
@@ -22,14 +22,16 @@ import type {
   TravelChecklistItem,
   TravelFile,
   TravelFileCategory,
+  TravelItineraryItem,
   TravelTrip
 } from "../types";
+import { deriveDocumentStatus } from "../utils/documentStatus";
 
 interface SaveDocumentInput {
   id?: string;
   title: string;
   category: DocumentCategory;
-  status: DocumentStatus;
+  status?: DocumentStatus;
   fileName?: string;
   fileType?: string;
   fileUri?: string;
@@ -69,6 +71,7 @@ interface AppDataContextValue {
   deleteChecklistItem: (id: string) => void;
   saveDocument: (input: SaveDocumentInput) => string;
   deleteDocument: (id: string) => void;
+  removeDocumentFile: (id: string) => void;
   saveTrip: (input: SaveTripInput) => string;
   deleteTrip: (id: string) => void;
   addTravelFile: (
@@ -82,6 +85,7 @@ interface AppDataContextValue {
   addTravelChecklistItem: (tripId: string, title: string) => TravelChecklistItem;
   toggleTravelChecklistItem: (tripId: string, checklistItemId: string) => void;
   deleteTravelChecklistItem: (tripId: string, checklistItemId: string) => void;
+  toggleTravelItineraryItem: (tripId: string, itineraryItemId: string) => void;
   setMonthlyBudgetAmount: (amount: number) => void;
   addBudgetItem: (title: string, amount: number, category?: BudgetCategory) => BudgetItem;
   deleteBudgetItem: (id: string) => void;
@@ -115,12 +119,12 @@ function trimmed(value: string, fallback: string) {
 }
 
 export function AppDataProvider({ children }: AppDataProviderProps) {
-  const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>(mockChecklistItems);
-  const [documents, setDocuments] = useState<DocumentItem[]>(mockDocuments);
-  const [trips, setTrips] = useState<TravelTrip[]>(mockTrips);
-  const [budgetItems, setBudgetItems] = useState<BudgetItem[]>(mockBudgetItems);
-  const [monthlyBudget, setMonthlyBudget] = useState<MonthlyBudget>(mockMonthlyBudget);
-  const [emergencyContacts, setEmergencyContacts] = useState<EmergencyContact[]>(mockEmergencyContacts);
+  const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>(seedChecklistItems);
+  const [documents, setDocuments] = useState<DocumentItem[]>(seedDocuments);
+  const [trips, setTrips] = useState<TravelTrip[]>(seedTrips);
+  const [budgetItems, setBudgetItems] = useState<BudgetItem[]>(seedBudgetItems);
+  const [monthlyBudget, setMonthlyBudget] = useState<MonthlyBudget>(seedMonthlyBudget);
+  const [emergencyContacts, setEmergencyContacts] = useState<EmergencyContact[]>(seedEmergencyContacts);
 
   const addChecklistItem: AppDataContextValue["addChecklistItem"] = (title, category = "other") => {
     const timestamp = now();
@@ -176,11 +180,11 @@ export function AppDataProvider({ children }: AppDataProviderProps) {
 
     setDocuments((current) => {
       const existing = current.find((item) => item.id === id);
-      const nextDocument: DocumentItem = {
+      const draftDocument: DocumentItem = {
         id,
         title: trimmed(input.title, existing?.title ?? "New document"),
         category: input.category,
-        status: input.status,
+        status: input.status ?? existing?.status ?? "missing",
         fileName: input.fileName ?? existing?.fileName,
         fileType: input.fileType ?? existing?.fileType,
         fileUri: input.fileUri ?? existing?.fileUri,
@@ -188,6 +192,10 @@ export function AppDataProvider({ children }: AppDataProviderProps) {
         notes: input.notes?.trim() || undefined,
         createdAt: existing?.createdAt ?? timestamp,
         updatedAt: timestamp
+      };
+      const nextDocument: DocumentItem = {
+        ...draftDocument,
+        status: deriveDocumentStatus(draftDocument)
       };
 
       return existing
@@ -200,6 +208,23 @@ export function AppDataProvider({ children }: AppDataProviderProps) {
 
   const deleteDocument = (id: string) => {
     setDocuments((current) => current.filter((item) => item.id !== id));
+  };
+
+  const removeDocumentFile = (id: string) => {
+    setDocuments((current) =>
+      current.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              fileName: undefined,
+              fileType: undefined,
+              fileUri: undefined,
+              status: item.status === "prepared" ? "missing" : item.status,
+              updatedAt: now()
+            }
+          : item
+      )
+    );
   };
 
   const saveTrip: AppDataContextValue["saveTrip"] = (input) => {
@@ -215,6 +240,7 @@ export function AppDataProvider({ children }: AppDataProviderProps) {
         startDate: input.startDate.trim(),
         endDate: input.endDate.trim(),
         notes: input.notes?.trim() || undefined,
+        itinerary: existing?.itinerary ?? [],
         files: existing?.files ?? [],
         checklist: existing?.checklist ?? [],
         createdAt: existing?.createdAt ?? timestamp,
@@ -348,6 +374,30 @@ export function AppDataProvider({ children }: AppDataProviderProps) {
     );
   };
 
+  const toggleTravelItineraryItem = (tripId: string, itineraryItemId: string) => {
+    const timestamp = now();
+
+    setTrips((current) =>
+      current.map((trip) =>
+        trip.id === tripId
+          ? {
+              ...trip,
+              itinerary: trip.itinerary.map((item: TravelItineraryItem) =>
+                item.id === itineraryItemId
+                  ? {
+                      ...item,
+                      isDone: !item.isDone,
+                      updatedAt: timestamp
+                    }
+                  : item
+              ),
+              updatedAt: timestamp
+            }
+          : trip
+      )
+    );
+  };
+
   const setMonthlyBudgetAmount = (amount: number) => {
     setMonthlyBudget((current) => ({
       ...current,
@@ -422,6 +472,7 @@ export function AppDataProvider({ children }: AppDataProviderProps) {
         deleteChecklistItem,
         saveDocument,
         deleteDocument,
+        removeDocumentFile,
         saveTrip,
         deleteTrip,
         addTravelFile,
@@ -429,6 +480,7 @@ export function AppDataProvider({ children }: AppDataProviderProps) {
         addTravelChecklistItem,
         toggleTravelChecklistItem,
         deleteTravelChecklistItem,
+        toggleTravelItineraryItem,
         setMonthlyBudgetAmount,
         addBudgetItem,
         deleteBudgetItem,

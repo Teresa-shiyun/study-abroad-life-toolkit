@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import { colors, spacing } from "../utils/theme";
+import { CloudPuppyBadge } from "./CloudPuppyBadge";
 
 interface ScreenProps {
   title?: string;
@@ -16,7 +17,10 @@ export function Screen({ title, subtitle, children, footer }: ScreenProps) {
         <ScrollView contentContainerStyle={styles.content}>
           {title || subtitle ? (
             <View style={styles.header}>
-              {title ? <Text style={styles.title}>{title}</Text> : null}
+              <View style={styles.titleRow}>
+                <CloudPuppyBadge size={40} />
+                {title ? <Text style={styles.title}>{title}</Text> : null}
+              </View>
               {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
             </View>
           ) : null}
@@ -48,10 +52,16 @@ const styles = StyleSheet.create({
   header: {
     gap: spacing.xs
   },
+  titleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md
+  },
   title: {
+    flex: 1,
     color: colors.text,
     fontSize: 28,
-    fontWeight: "800"
+    fontWeight: "600"
   },
   subtitle: {
     color: colors.mutedText,

@@ -36,6 +36,7 @@ function RootStack() {
         <Stack.Screen name="emergency" options={{ title: t("emergencyContacts") }} />
         <Stack.Screen name="search" options={{ title: t("search") }} />
         <Stack.Screen name="settings" options={{ title: t("settings") }} />
+        <Stack.Screen name="profile" options={{ title: t("profile", "Profile") }} />
         <Stack.Screen name="+not-found" options={{ title: "Not Found" }} />
       </Stack>
     </>

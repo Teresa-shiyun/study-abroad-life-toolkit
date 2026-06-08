@@ -77,6 +77,18 @@ export interface TravelChecklistItem {
   updatedAt: string;
 }
 
+export interface TravelItineraryItem {
+  id: string;
+  tripId: string;
+  title: string;
+  date?: string;
+  time?: string;
+  isDone: boolean;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface TravelTrip {
   id: string;
   name: string;
@@ -84,6 +96,7 @@ export interface TravelTrip {
   startDate: string;
   endDate: string;
   notes?: string;
+  itinerary: TravelItineraryItem[];
   files: TravelFile[];
   checklist: TravelChecklistItem[];
   createdAt: string;

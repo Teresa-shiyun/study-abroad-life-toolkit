@@ -1,8 +1,10 @@
 export function formatCurrency(amount: number, currency = "GBP") {
-  return new Intl.NumberFormat("en-GB", {
+  const locale = currency === "CNY" ? "zh-CN" : "en-GB";
+
+  return new Intl.NumberFormat(locale, {
     style: "currency",
     currency,
-    maximumFractionDigits: 0
+    maximumFractionDigits: amount % 1 === 0 ? 0 : 2
   }).format(amount);
 }
 
@@ -16,4 +18,12 @@ export function getChecklistProgress(doneCount: number, totalCount: number) {
   }
 
   return `${doneCount}/${totalCount}`;
+}
+
+export function getProgressPercent(doneCount: number, totalCount: number) {
+  if (totalCount === 0) {
+    return 0;
+  }
+
+  return Math.round((doneCount / totalCount) * 100);
 }

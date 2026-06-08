@@ -7,7 +7,7 @@ import { Screen } from "../components/Screen";
 import { useAppData } from "../data/AppDataContext";
 import { useLanguage } from "../i18n";
 import { routes } from "../navigation/routes";
-import type { DocumentCategory, DocumentStatus } from "../types";
+import type { DocumentCategory } from "../types";
 import { pickFile } from "../utils/filePicker";
 import { colors, spacing } from "../utils/theme";
 
@@ -23,16 +23,13 @@ const documentCategories: DocumentCategory[] = [
   "other"
 ];
 
-const documentStatuses: DocumentStatus[] = ["missing", "prepared", "expired", "needsUpdate"];
-
 export function AddEditDocumentScreen() {
   const { t } = useLanguage();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const { documents, saveDocument } = useAppData();
   const document = documents.find((item) => item.id === id);
-  const [title, setTitle] = useState(document ? t(`mock.${document.id}`, document.title) : "");
+  const [title, setTitle] = useState(document ? t(`seed.${document.id}`, document.title) : "");
   const [category, setCategory] = useState<DocumentCategory>(document?.category ?? "passport");
-  const [status, setStatus] = useState<DocumentStatus>(document?.status ?? "missing");
   const [expiryDate, setExpiryDate] = useState(document?.expiryDate ?? "");
   const [notes, setNotes] = useState(document?.notes ?? "");
   const [fileName, setFileName] = useState(document?.fileName ?? "");
@@ -45,11 +42,6 @@ export function AddEditDocumentScreen() {
     setCategory(documentCategories[(index + 1) % documentCategories.length]);
   }
 
-  function cycleStatus() {
-    const index = documentStatuses.indexOf(status);
-    setStatus(documentStatuses[(index + 1) % documentStatuses.length]);
-  }
-
   async function handleChooseFile() {
     const selectedFile = await pickFile();
     if (!selectedFile) {
@@ -60,7 +52,6 @@ export function AddEditDocumentScreen() {
     setFileName(selectedFile.name);
     setFileUri(selectedFile.uri ?? "");
     setFileType(selectedFile.type ?? "");
-    setStatus("prepared");
     setNotice(`${t("fileSelected")}: ${selectedFile.name}`);
   }
 
@@ -69,7 +60,6 @@ export function AddEditDocumentScreen() {
       id,
       title: title || t("newDocumentTitle"),
       category,
-      status,
       expiryDate,
       notes,
       fileName: fileName || undefined,
@@ -94,12 +84,6 @@ export function AddEditDocumentScreen() {
         <Text style={styles.label}>{t("category")}</Text>
         <Pressable style={styles.picker} onPress={cycleCategory}>
           <Text style={styles.pickerText}>{t(`documentCategory.${category}`)}</Text>
-          <Text style={styles.helper}>{t("tapToChange")}</Text>
-        </Pressable>
-
-        <Text style={styles.label}>{t("status")}</Text>
-        <Pressable style={styles.picker} onPress={cycleStatus}>
-          <Text style={styles.pickerText}>{t(`documentStatus.${status}`)}</Text>
           <Text style={styles.helper}>{t("tapToChange")}</Text>
         </Pressable>
 
@@ -140,7 +124,7 @@ const styles = StyleSheet.create({
   label: {
     color: colors.text,
     fontSize: 13,
-    fontWeight: "800"
+    fontWeight: "600"
   },
   input: {
     minHeight: 44,
@@ -182,7 +166,7 @@ const styles = StyleSheet.create({
   notice: {
     color: colors.primary,
     fontSize: 13,
-    fontWeight: "800"
+    fontWeight: "600"
   },
   actions: {
     flexDirection: "row",

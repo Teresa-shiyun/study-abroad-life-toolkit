@@ -10,7 +10,8 @@ export const routes = {
   budget: "/budget",
   emergency: "/emergency",
   search: "/search",
-  settings: "/settings"
+  settings: "/settings",
+  profile: "/profile"
 } as const;
 
 export const mainTabLabels = ["Home", "Checklist", "Documents", "Travel", "Budget"] as const;

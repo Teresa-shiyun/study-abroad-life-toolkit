@@ -58,20 +58,20 @@ The following files may contain sensitive personal information:
 - 学生证。
 - 任何包含地址、出生日期、证件号码、财务信息或移民信息的文件。
 
-## Demo, README, Screenshots, And Test Data / Demo、README、截图和测试数据
+## README, Screenshots, And Test Data / README、截图和测试数据
 
-Public project materials must use fictional data only.
+Public project materials must use non-private project data only.
 
 Do not use real sensitive files in:
 
 - README screenshots.
 - App screenshots.
-- Demo data.
+- Preview data.
 - Test data.
 - GitHub issues or pull requests.
 - Example files.
 
-Use placeholder images, mock documents, and fake records instead.
+Use screen-safe preview images and non-private records instead.
 
 公开项目材料只能使用虚拟数据。
 
@@ -79,7 +79,7 @@ Use placeholder images, mock documents, and fake records instead.
 
 - README 截图。
 - App 截图。
-- Demo 数据。
+- 预览数据。
 - 测试数据。
 - GitHub issue 或 pull request。
 - 示例文件。
@@ -100,7 +100,7 @@ The app should not upload documents to a cloud service in the first version.
 
 English:
 
-Your files may contain sensitive personal information. Please store them carefully and do not use real private documents in public demos or screenshots.
+Your files may contain sensitive personal information. Please store them carefully and do not use real private documents in public screenshots.
 
 中文：
 
@@ -149,4 +149,3 @@ Topics to review:
 Cloud sync should not be treated as a small UI feature because it changes the privacy risk of the app.
 
 云端同步不应被当作一个简单 UI 功能处理，因为它会明显改变 App 的隐私风险。
-

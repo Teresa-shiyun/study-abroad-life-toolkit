@@ -1,183 +1,142 @@
 # 海外留学生活助手 / Study Abroad Life Toolkit
 
-## Overview / 项目简介
+A mobile-first Expo app for organizing everyday study-abroad life: documents, checklists, trips, budgets, emergency contacts, search, profile, and language switching.
 
-Study Abroad Life Toolkit is a mobile app prototype for international students who want to organize practical study-abroad life information in one place.
+海外留学生活助手是一款面向留学生日常生活管理的移动端应用，用来整理文件、清单、旅行、预算、紧急联系人、搜索、个人信息和语言切换。
 
-The first version focuses on everyday student life management: important documents, life checklists, travel materials, budget records, emergency contacts, search, and English/Chinese language switching. It is planned as a local-first personal project, not a large platform.
+## Features
 
-海外留学生活助手是一个面向海外留学生的手机端 App 原型，用来集中整理留学生活中常用但容易分散的信息。
+- Home dashboard with quick entries, trip progress, document status, checklist progress, and budget summary.
+- Document wallet with status labels, expiry-based status calculation, upload/delete actions, and image/PDF-style previews.
+- Checklist with tappable completion states and add/delete flows.
+- Travel planner with itinerary checklist, saved ticket preview, trip files, and travel checklist progress.
+- Budget tracker with monthly budget, expense list, add expense modal, and delete confirmation.
+- Emergency contacts with phone/email copy actions.
+- Profile page with personal study-abroad information and settings entry.
+- Chinese and English interfaces selected from the language screen.
 
-第一版主要关注文件管理、生活事项、旅行材料、预算记录、紧急联系方式、搜索和中英切换。项目定位是 personal project / mobile app prototype，不是大型平台，也不是已经完成上线的产品。
+## 功能
 
-## Why I Built This / 为什么做这个项目
+- 首页：快速入口、旅行进度、文件状态、清单进度和预算概览。
+- 文件：文件状态标签、基于到期日的自动状态判断、上传/删除、图片和 PDF 风格预览。
+- 清单：可点击完成状态，并支持新增、编辑和删除。
+- 旅行：行程清单、已保存票据预览、旅行文件和旅行清单进度。
+- 预算：月度预算、支出列表、新增支出弹窗和删除确认。
+- 紧急联系人：支持复制电话和邮箱。
+- 个人页：展示个人留学信息，并从个人页进入设置。
+- 语言：支持简体中文和英文界面切换。
 
-International students often keep important life information across notes, screenshots, emails, PDFs, chat messages, and photo albums. This can become messy when they need to find a document, check a travel booking, review a budget item, or copy an emergency phone number quickly.
+## Document Status
 
-This project explores a simple app structure for keeping those everyday records organized locally on the phone.
+Document status is calculated from file readiness and expiry date:
 
-留学生的生活资料经常分散在备忘录、截图、邮件、PDF、聊天记录和相册里。需要临时找护照信息、机票截图、租房合同、预算记录或紧急电话时，会比较不方便。
+- `missing`: no file has been attached.
+- `prepared`: a file exists and the expiry date is not close.
+- `expired`: the expiry date has passed.
+- `needsUpdate`: the expiry date is within the attention window.
 
-这个项目希望先做一个清楚、实用的手机端原型，把这些日常资料按模块整理起来，并优先考虑本地保存。
+文件状态会根据是否已上传文件和到期日期自动判断：
 
-## Core Features / 核心功能
+- `missing`：未准备文件。
+- `prepared`：已准备文件，并且到期日不临近。
+- `expired`：文件已过期。
+- `needsUpdate`：文件临近到期，需要更新。
 
-Planned first-version modules:
+## Screenshots
 
-- Home Dashboard: overview of pending tasks, missing documents, budget status, upcoming trips, recent files, and emergency contacts.
-- Life Checklist: common study-abroad tasks with categories and status tracking.
-- Document Wallet: local records for important documents and uploaded file references.
-- Travel Planner / Travel Wallet: trip information, travel screenshots, travel files, and trip checklists.
-- Budget Tracker: simple monthly budget and expense records.
-- Emergency Contacts: important contacts with quick copy actions.
-- Search: local search across documents, checklists, trips, expenses, contacts, and notes.
-- Language: English and Chinese interface support.
+### 中文界面
 
-第一版计划包含以下模块：
+| 首页 | 清单 |
+| --- | --- |
+| ![中文首页](assets/screenshots/zh/home.png) | ![中文清单](assets/screenshots/zh/checklist.png) |
 
-- 首页总览：查看待办事项、缺少文件、预算状态、即将到来的旅行、最近文件和紧急联系方式入口。
-- 生活事项清单：管理常见留学生活事项，并支持分类和状态。
-- 重要文件夹：记录重要文件信息，并保存本地文件或图片引用。
-- 旅行材料管理：管理旅行计划、机票/酒店/签证/保险截图和旅行 checklist。
-- 生活预算记录：记录简单的月度预算和支出。
-- 紧急联系方式：保存重要电话和邮箱，并支持快速复制。
-- 搜索：在本地记录中搜索文件、事项、旅行、预算、联系人和备注。
-- 中英文切换：支持英文和中文界面文案。
+| 文件 | 文件详情 |
+| --- | --- |
+| ![中文文件](assets/screenshots/zh/documents.png) | ![中文文件详情](assets/screenshots/zh/document-detail.png) |
 
-## Tech Stack / 技术栈
+| 编辑文件 | 旅行 |
+| --- | --- |
+| ![中文编辑文件](assets/screenshots/zh/document-edit.png) | ![中文旅行](assets/screenshots/zh/travel.png) |
 
-Suggested stack:
+| 旅行详情 | 编辑旅行 |
+| --- | --- |
+| ![中文旅行详情](assets/screenshots/zh/travel-detail.png) | ![中文编辑旅行](assets/screenshots/zh/travel-edit.png) |
+
+| 预算 | 紧急联系人 |
+| --- | --- |
+| ![中文预算](assets/screenshots/zh/budget.png) | ![中文紧急联系人](assets/screenshots/zh/emergency.png) |
+
+| 搜索 | 个人 |
+| --- | --- |
+| ![中文搜索](assets/screenshots/zh/search.png) | ![中文个人](assets/screenshots/zh/profile.png) |
+
+| 语言设置 |
+| --- |
+| ![中文语言设置](assets/screenshots/zh/language.png) |
+
+### English UI
+
+| Home | Checklist |
+| --- | --- |
+| ![English home](assets/screenshots/en/home.png) | ![English checklist](assets/screenshots/en/checklist.png) |
+
+| Documents | Document Detail |
+| --- | --- |
+| ![English documents](assets/screenshots/en/documents.png) | ![English document detail](assets/screenshots/en/document-detail.png) |
+
+| Edit Document | Travel |
+| --- | --- |
+| ![English edit document](assets/screenshots/en/document-edit.png) | ![English travel](assets/screenshots/en/travel.png) |
+
+| Travel Detail | Edit Travel |
+| --- | --- |
+| ![English travel detail](assets/screenshots/en/travel-detail.png) | ![English edit travel](assets/screenshots/en/travel-edit.png) |
+
+| Budget | Emergency Contacts |
+| --- | --- |
+| ![English budget](assets/screenshots/en/budget.png) | ![English emergency contacts](assets/screenshots/en/emergency.png) |
+
+| Search | Profile |
+| --- | --- |
+| ![English search](assets/screenshots/en/search.png) | ![English profile](assets/screenshots/en/profile.png) |
+
+| Language Settings |
+| --- |
+| ![English language settings](assets/screenshots/en/language.png) |
+
+## Tech Stack
 
 - Expo
 - React Native
 - TypeScript
 - Expo Router
-- Local mock data for the static prototype
-- Local-first storage, to be confirmed during implementation
-- Local file/image picker, to be confirmed during implementation
+- Local app state and project seed data
+- Local file/image selection where the runtime supports it
 
-计划技术栈：
+## Run Locally
 
-- Expo
-- React Native
-- TypeScript
-- Expo Router
-- 静态原型阶段使用本地 mock data
-- 本地优先的数据存储，具体方案在开发阶段确认
-- 本地文件/图片选择器，具体方案在开发阶段确认
-
-## Current Status / 当前状态
-
-Basic Expo project and static screens created.
-
-The project now includes an Expo + React Native + TypeScript setup, Expo Router navigation, static screens, shared components, mock data, TypeScript types, and a basic i18n folder.
-
-No real local storage, real file upload, backend service, login system, cloud sync, or public deployment is included at this stage.
-
-已完成基础 Expo + React Native + TypeScript 项目结构和静态页面。
-
-当前项目包含 Expo Router 导航、静态页面、通用组件、mock data、TypeScript 类型文件和基础 i18n 文件夹。
-
-现阶段不包含真实本地存储、真实文件上传、后端服务、登录系统、云端同步或公开部署。
-
-## First Version Scope / 第一版范围
-
-The first version should stay focused on a useful local mobile prototype:
-
-- Local checklist management.
-- Local document records and local file references.
-- Local trip records, travel files, and trip checklists.
-- Simple local budget records.
-- Local emergency contacts.
-- Local search.
-- English and Chinese labels.
-
-第一版应保持轻量和真实，先完成一个可本地使用的手机端原型：
-
-- 本地生活事项清单。
-- 本地重要文件记录和本地文件引用。
-- 本地旅行记录、旅行材料和旅行 checklist。
-- 简单的本地预算记录。
-- 本地紧急联系方式。
-- 本地搜索。
-- 中英文界面文案。
-
-## Not Included In The First Version / 第一版暂不包含
-
-The first version will not include:
-
-- Login or registration.
-- Cloud sync.
-- AI chat.
-- Email templates.
-- Community forum.
-- Map search for GPs, banks, or local services.
-- Official visa advice.
-- Legal advice.
-- Medical advice.
-- Financial or immigration advice.
-
-第一版暂不包含：
-
-- 登录或注册。
-- 云端同步。
-- AI 聊天。
-- 邮件模板。
-- 社区论坛。
-- 地图查找 GP、银行或本地服务。
-- 官方签证建议。
-- 法律建议。
-- 医疗建议。
-- 金融或移民建议。
-
-## Privacy Reminder / 隐私提醒
-
-The app may store records related to sensitive personal documents, such as passports, visas, BRP/eVisa records, bank letters, university letters, tenancy agreements, tickets, hotel bookings, and insurance files.
-
-For the first version, file upload is planned as local storage only. Files should not be uploaded to a cloud service.
-
-GitHub screenshots, demo data, and test data must use fictional data, placeholder images, or mock documents only. Do not use real passports, real visas, real bank letters, real tickets, or other private files.
-
-这个 App 可能会记录护照、签证、BRP/eVisa、银行信、大学证明、租房合同、机票、酒店订单和保险文件等敏感资料。
-
-第一版的文件上传只计划做本地保存，不上传云端。
-
-GitHub 截图、demo 和测试数据只能使用虚拟数据、占位图或模拟文件，不能使用真实护照、签证、银行信、机票或其他私人文件。
-
-## Screenshots / 项目截图
-
-Screenshots will be added after the static screens are reviewed with fictional data.
-
-项目截图会在静态页面用虚拟数据检查后补充。
-
-## How to Run / 本地运行
-
-Install dependencies and start the Expo development server:
-
-安装依赖并启动 Expo 开发服务器：
+Install dependencies:
 
 ```bash
 npm install
-npx expo start
 ```
 
-Mobile preview:
+Start the Expo development server:
 
-- Install Expo Go on your phone.
-- Run `npm start`.
-- Scan the QR code shown by Expo.
+```bash
+npm start
+```
 
-手机预览：
+Run the web build preview:
 
-- 在手机上安装 Expo Go。
-- 运行 `npm start`。
-- 使用 Expo 显示的二维码在手机上打开。
+```bash
+npm run export:web
+npm run serve:dist
+```
 
-You can also run the app in an Android Emulator or iOS Simulator if those tools are installed.
+Then open `http://127.0.0.1:8082`.
 
-如果电脑上已经安装 Android Studio 模拟器或 Xcode iOS Simulator，也可以用模拟器运行。
-
-Available npm scripts:
+## Scripts
 
 ```bash
 npm start
@@ -189,16 +148,19 @@ npm run serve:dist
 npm run typecheck
 ```
 
-For a static web preview:
+## Scope
 
-```bash
-npm run export:web
-npm run serve:dist
-```
+This project focuses on local organization for a first mobile app version. It does not include login, registration, cloud sync, email templates, community forum features, map search, official visa advice, legal advice, medical advice, financial advice, or immigration advice.
 
-Then open `http://127.0.0.1:8082`.
+本项目第一版聚焦本地整理和移动端基础体验，不包含登录注册、云同步、邮件模板、社区、地图搜索、官方签证建议、法律建议、医疗建议、金融建议或移民建议。
 
-## Documentation / 项目文档
+## Privacy Note
+
+The app may store records related to sensitive documents such as passports, visas, bank letters, university letters, tenancy agreements, tickets, hotel bookings, and insurance files. Public screenshots and repository materials should not include real personal files.
+
+这个 App 可能会记录护照、签证、银行信、大学证明、租房合同、机票、酒店订单和保险文件等敏感资料。公开截图和仓库资料中不要使用真实个人文件。
+
+## Documentation
 
 - [Project Brief / 项目说明](docs/PROJECT_BRIEF.md)
 - [Features / 功能规划](docs/FEATURES.md)
@@ -207,21 +169,3 @@ Then open `http://127.0.0.1:8082`.
 - [Default Content / 默认内容](docs/CONTENT.md)
 - [Roadmap / 开发路线](docs/ROADMAP.md)
 - [Privacy Notes / 隐私说明](docs/PRIVACY_NOTES.md)
-
-## Roadmap / 后续计划
-
-Current roadmap status:
-
-- Phase 1: Documentation and planning — completed.
-- Phase 2: Basic Expo project setup — completed.
-- Phase 3: Static screens and navigation — completed as a static prototype.
-- Phase 4: Local storage and CRUD — next suggested phase.
-
-当前路线图状态：
-
-- Phase 1：文档与规划 — 已完成。
-- Phase 2：基础 Expo 项目搭建 — 已完成。
-- Phase 3：静态页面与导航 — 已完成静态原型。
-- Phase 4：本地存储与增删改查 — 建议下一步开始。
-
-See [Roadmap / 开发路线](docs/ROADMAP.md) for details.

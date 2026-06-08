@@ -1,20 +1,17 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
-import { ActionIconButton } from "../components/ActionIconButton";
+import { AppIcon } from "../components/AppIcon";
 import { Card } from "../components/Card";
 import { ConfirmDialog } from "../components/ConfirmDialog";
-import { InfoRow } from "../components/InfoRow";
-import { Pill } from "../components/Pill";
 import { Screen } from "../components/Screen";
-import { Section } from "../components/Section";
 import { useAppData } from "../data/AppDataContext";
 import { useLanguage } from "../i18n";
 import { routes } from "../navigation/routes";
 import type { TravelFile } from "../types";
 import { isImageFile, openPickedFile, pickFile } from "../utils/filePicker";
 import { formatDateRange } from "../utils/format";
-import { colors, spacing } from "../utils/theme";
+import { colors, radii, shadows, spacing } from "../utils/theme";
 
 type PendingDelete =
   | { kind: "trip" }
@@ -22,7 +19,7 @@ type PendingDelete =
   | { kind: "checklist"; id: string };
 
 export function TravelDetailScreen() {
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const {
     addTravelChecklistItem,
@@ -31,12 +28,17 @@ export function TravelDetailScreen() {
     deleteTravelFile,
     deleteTrip,
     toggleTravelChecklistItem,
+    toggleTravelItineraryItem,
     trips
   } = useAppData();
   const [notice, setNotice] = useState<string | undefined>();
   const [pendingDelete, setPendingDelete] = useState<PendingDelete | undefined>();
-  const [selectedFileId, setSelectedFileId] = useState<string | undefined>();
   const trip = trips.find((item) => item.id === id) ?? trips[0];
+  const [selectedFileId, setSelectedFileId] = useState<string | undefined>(trip?.files[0]?.id);
+
+  function pick(zh: string, en: string) {
+    return language === "zh" ? zh : en;
+  }
 
   if (!trip) {
     return (
@@ -54,43 +56,17 @@ export function TravelDetailScreen() {
     selectedFile.fileUri &&
     !selectedFile.fileUri.startsWith("local://") &&
     isImageFile(selectedFile.fileName ?? selectedFile.title, selectedFile.fileType);
-  const itineraryItems = [
-    {
-      step: "1",
-      label: t("dayOne"),
-      title: t("arrivalPlan"),
-      detail: `${trip.startDate} · ${trip.destination}`
-    },
-    {
-      step: "2",
-      label: t("dayTwo"),
-      title: t("localPlan"),
-      detail: `${trip.files.length} ${t("files")} · ${trip.checklist.length} ${t("items")}`
-    },
-    {
-      step: "3",
-      label: t("lastDay"),
-      title: t("returnPlan"),
-      detail: trip.endDate
-    }
-  ];
 
   async function handleAddFile() {
-    const selectedFileInfo = await pickFile();
-    if (!selectedFileInfo) {
+    const selected = await pickFile();
+    if (!selected) {
       setNotice(t("filePickerUnavailable"));
       return;
     }
 
-    const file = addTravelFile(
-      trip.id,
-      selectedFileInfo.name,
-      "other",
-      selectedFileInfo.uri,
-      selectedFileInfo.type
-    );
+    const file = addTravelFile(trip.id, selected.name, "other", selected.uri, selected.type);
     setSelectedFileId(file.id);
-    setNotice(`${t("travelFileAdded")}: ${selectedFileInfo.name}`);
+    setNotice(`${t("travelFileAdded")}: ${selected.name}`);
   }
 
   function handleOpenFile(file?: TravelFile) {
@@ -101,11 +77,6 @@ export function TravelDetailScreen() {
     setSelectedFileId(file.id);
     const opened = openPickedFile(file.fileUri);
     setNotice(opened ? t("openFileStarted") : t("openFileUnavailable"));
-  }
-
-  function handleAddChecklistItem() {
-    addTravelChecklistItem(trip.id, t("newChecklistItemTitle"));
-    setNotice(t("travelChecklistAdded"));
   }
 
   function handleConfirmDelete() {
@@ -122,7 +93,8 @@ export function TravelDetailScreen() {
 
     if (pendingDelete.kind === "file") {
       deleteTravelFile(trip.id, pendingDelete.id);
-      setNotice(t("documentDeleted"));
+      setSelectedFileId(undefined);
+      setNotice(pick("票据已删除", "Ticket removed"));
     }
 
     if (pendingDelete.kind === "checklist") {
@@ -134,152 +106,156 @@ export function TravelDetailScreen() {
   }
 
   return (
-    <Screen title={t("travelDetail")}>
-      <Section title={t("itinerary")}>
-        <View style={styles.timeline}>
-          {itineraryItems.map((item) => (
-            <View key={item.label} style={styles.timelineItem}>
-              <View style={styles.timelineDot}>
-                <Text style={styles.timelineDotText}>{item.step}</Text>
-              </View>
-              <View style={styles.timelineBody}>
-                <Text style={styles.timelineTitle}>{item.title}</Text>
-                <Text style={styles.timelineText}>{item.detail}</Text>
-              </View>
-            </View>
-          ))}
-        </View>
-      </Section>
-
-      <Section title={t("aboutTrip")}>
-        <Card>
-          <View style={styles.cardTop}>
-            <View style={styles.titleBlock}>
-              <Text style={styles.title}>{t(`mock.${trip.id}`, trip.name)}</Text>
-              <Text style={styles.meta}>{trip.destination}</Text>
-            </View>
-            <View style={styles.rowActions}>
-              <ActionIconButton
-                label={t("edit")}
-                icon="edit"
-                tone="primary"
-                onPress={() =>
-                  router.push({
-                    pathname: "/travel/edit",
-                    params: { id: trip.id }
-                  })
-                }
-              />
-              <ActionIconButton
-                label={t("delete")}
-                icon="trash"
-                tone="danger"
-                onPress={() => setPendingDelete({ kind: "trip" })}
-              />
-            </View>
-          </View>
-          <InfoRow label={t("dateRange")} value={formatDateRange(trip.startDate, trip.endDate)} />
-          <InfoRow label={t("notes")} value={trip.notes} />
-        </Card>
-      </Section>
+    <Screen>
+      <View style={styles.hero}>
+        <View style={styles.heroCloudOne} />
+        <View style={styles.heroCloudTwo} />
+        <Pressable style={styles.backButton} onPress={() => router.back()}>
+          <Text style={styles.backText}>‹</Text>
+        </Pressable>
+        <Text style={styles.heroTitle}>{t(`seed.${trip.id}`, trip.name)}</Text>
+        <Text style={styles.heroMeta}>
+          {trip.destination} · {formatDateRange(trip.startDate, trip.endDate)}
+        </Text>
+      </View>
 
       {notice ? <Text style={styles.notice}>{notice}</Text> : null}
 
-      <Section title={t("uploadedFiles")}>
-        <Pressable style={styles.addCard} onPress={handleAddFile}>
-          <Text style={styles.addSymbol}>+</Text>
-          <Text style={styles.addText}>{t("addFile")}</Text>
-        </Pressable>
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>{t("itinerary")}</Text>
+        <View style={styles.memoList}>
+          {trip.itinerary.map((item) => (
+            <Pressable
+              key={item.id}
+              style={({ pressed }) => [styles.memoRow, pressed && styles.pressed]}
+              onPress={() => toggleTravelItineraryItem(trip.id, item.id)}
+            >
+              <View style={[styles.square, item.isDone && styles.squareDone]}>
+                {item.isDone ? <Text style={styles.squareCheck}>✓</Text> : null}
+              </View>
+              <View style={styles.memoTextBlock}>
+                <Text style={[styles.memoTitle, item.isDone && styles.memoDone]}>
+                  {t(`seed.${item.id}`, item.title)}
+                </Text>
+                <Text style={styles.memoMeta}>
+                  {[item.date, item.time].filter(Boolean).join(" · ")}
+                </Text>
+              </View>
+            </Pressable>
+          ))}
+        </View>
+      </View>
 
-        <View style={styles.preview}>
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>{pick("已保存票据", "Saved tickets")}</Text>
+          <Pressable style={styles.circleButton} onPress={handleAddFile}>
+            <Text style={styles.circleButtonText}>+</Text>
+          </Pressable>
+        </View>
+
+        <Card style={styles.ticketCard}>
           {selectedFile ? (
             <>
               {selectedFileIsImage ? (
-                <Image
-                  source={{ uri: selectedFile.fileUri }}
-                  style={styles.previewImage}
-                  resizeMode="cover"
-                />
-              ) : null}
-              <Text style={styles.previewTitle}>{selectedFile.fileName ?? selectedFile.title}</Text>
-              <Text style={styles.previewText}>{t(`travelFileCategory.${selectedFile.category}`)}</Text>
-              <Text style={styles.previewText}>{t("fileUploadHint")}</Text>
-              <Pressable style={styles.openFileBox} onPress={() => handleOpenFile(selectedFile)}>
-                <Text style={styles.openFileText}>{t("openFile")}</Text>
-              </Pressable>
+                <Image source={{ uri: selectedFile.fileUri }} style={styles.ticketImage} resizeMode="cover" />
+              ) : (
+                <View style={styles.fileFallback}>
+                  <AppIcon name="file" color={colors.blue} size={46} />
+                  <Text style={styles.fileFallbackText}>{selectedFile.fileName ?? selectedFile.title}</Text>
+                </View>
+              )}
+              <View style={styles.ticketActions}>
+                <Pressable style={styles.openButton} onPress={() => handleOpenFile(selectedFile)}>
+                  <Text style={styles.openButtonText}>{t("openFile")}</Text>
+                </Pressable>
+                <Pressable
+                  style={styles.deleteButton}
+                  onPress={() => setPendingDelete({ kind: "file", id: selectedFile.id })}
+                >
+                  <Text style={styles.deleteButtonText}>{t("deleteFile")}</Text>
+                </Pressable>
+              </View>
             </>
           ) : (
-            <>
-              <Text style={styles.previewTitle}>{t("mockFilePreview")}</Text>
-              <Text style={styles.previewText}>{t("tapFileToPreview")}</Text>
-            </>
+            <Pressable style={styles.emptyTicket} onPress={handleAddFile}>
+              <Text style={styles.addTicketText}>+ {t("addFile")}</Text>
+            </Pressable>
           )}
-        </View>
+        </Card>
 
-        <View style={styles.itemList}>
-          {trip.files.map((file) => (
-            <Card key={file.id} style={file.id === selectedFile?.id ? styles.selectedCard : undefined}>
-              <View style={styles.cardTop}>
-                <Pressable
-                  accessibilityLabel={t("openFile")}
-                  onPress={() => {
-                    setSelectedFileId(file.id);
-                    setNotice(undefined);
-                  }}
-                  style={styles.titleBlock}
-                >
-                  <Text style={styles.itemTitle}>{file.title}</Text>
-                  <Text style={styles.text}>{file.fileName}</Text>
-                </Pressable>
-                <View style={styles.rowActions}>
-                  <ActionIconButton
-                    label={t("delete")}
-                    icon="trash"
-                    tone="danger"
-                    onPress={() => setPendingDelete({ kind: "file", id: file.id })}
-                  />
-                </View>
-              </View>
-              <Pill label={t(`travelFileCategory.${file.category}`)} />
-            </Card>
-          ))}
-        </View>
-      </Section>
-
-      <Section title={t("tripChecklist")}>
-        <Pressable style={styles.addCard} onPress={handleAddChecklistItem}>
-          <Text style={styles.addSymbol}>+</Text>
-          <Text style={styles.addText}>{t("addChecklistItem")}</Text>
-        </Pressable>
-
-        <View style={styles.itemList}>
-          {trip.checklist.map((item) => (
-            <Card key={item.id}>
-              <View style={styles.cardTop}>
-                <Text style={styles.itemTitle}>{item.title}</Text>
-                <ActionIconButton
-                  label={t("delete")}
-                  icon="trash"
-                  tone="danger"
-                  onPress={() => setPendingDelete({ kind: "checklist", id: item.id })}
-                />
-              </View>
+        {trip.files.length > 1 ? (
+          <View style={styles.fileChips}>
+            {trip.files.map((file) => (
               <Pressable
-                accessibilityLabel={t("status")}
-                onPress={() => {
-                  toggleTravelChecklistItem(trip.id, item.id);
-                  setNotice(t("travelChecklistUpdated"));
-                }}
-                style={[styles.statusBox, item.isDone ? styles.successStatusBox : styles.neutralStatusBox]}
+                key={file.id}
+                style={[styles.fileChip, file.id === selectedFile?.id && styles.fileChipSelected]}
+                onPress={() => setSelectedFileId(file.id)}
               >
-                <Text style={styles.statusLabel}>{t("status")}</Text>
-                <Text style={styles.statusValue}>{item.isDone ? t("done") : t("open")}</Text>
+                <Text
+                  style={[styles.fileChipText, file.id === selectedFile?.id && styles.fileChipTextSelected]}
+                  numberOfLines={1}
+                >
+                  {file.title}
+                </Text>
               </Pressable>
-              {item.notes ? <Text style={styles.text}>{item.notes}</Text> : null}
-            </Card>
+            ))}
+          </View>
+        ) : null}
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>{t("tripChecklist")}</Text>
+        <Card style={styles.tripChecklistCard}>
+          {trip.checklist.map((item) => (
+            <View key={item.id} style={styles.tripChecklistRow}>
+              <Pressable
+                style={[styles.square, item.isDone && styles.squareDone]}
+                onPress={() => toggleTravelChecklistItem(trip.id, item.id)}
+              >
+                {item.isDone ? <Text style={styles.squareCheck}>✓</Text> : null}
+              </Pressable>
+              <Text style={[styles.tripChecklistTitle, item.isDone && styles.memoDone]}>{item.title}</Text>
+              <Pressable
+                style={styles.smallDelete}
+                onPress={() => setPendingDelete({ kind: "checklist", id: item.id })}
+              >
+                <Text style={styles.smallDeleteText}>×</Text>
+              </Pressable>
+            </View>
           ))}
-        </View>
-      </Section>
+          <Pressable
+            style={styles.addChecklistRow}
+            onPress={() => addTravelChecklistItem(trip.id, pick("新的旅行清单", "New trip checklist item"))}
+          >
+            <Text style={styles.addChecklistText}>+ {t("addChecklistItem")}</Text>
+          </Pressable>
+        </Card>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>{t("aboutTrip")}</Text>
+        <Card>
+          <Text style={styles.aboutTitle}>{t(`seed.${trip.id}`, trip.name)}</Text>
+          <Text style={styles.text}>{trip.notes}</Text>
+          <View style={styles.aboutActions}>
+            <Pressable
+              style={styles.editTripButton}
+              onPress={() =>
+                router.push({
+                  pathname: "/travel/edit",
+                  params: { id: trip.id }
+                })
+              }
+            >
+              <Text style={styles.editTripText}>{t("edit")}</Text>
+            </Pressable>
+            <Pressable style={styles.deleteTripButton} onPress={() => setPendingDelete({ kind: "trip" })}>
+              <Text style={styles.deleteTripText}>{t("delete")}</Text>
+            </Pressable>
+          </View>
+        </Card>
+      </View>
 
       <ConfirmDialog
         visible={Boolean(pendingDelete)}
@@ -295,175 +271,315 @@ export function TravelDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  timeline: {
-    gap: spacing.md
-  },
-  timelineItem: {
-    flexDirection: "row",
-    gap: spacing.md,
-    padding: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 8,
-    backgroundColor: colors.surface
-  },
-  timelineDot: {
-    width: 34,
-    height: 34,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 8,
+  hero: {
+    minHeight: 210,
+    justifyContent: "flex-end",
+    gap: spacing.sm,
+    marginHorizontal: -spacing.lg,
+    marginTop: -spacing.lg,
+    padding: spacing.xl,
+    overflow: "hidden",
     backgroundColor: colors.primary
   },
-  timelineDotText: {
+  heroCloudOne: {
+    position: "absolute",
+    top: 36,
+    right: 58,
+    width: 36,
+    height: 16,
+    borderRadius: 12,
+    backgroundColor: "rgba(255,255,255,0.2)"
+  },
+  heroCloudTwo: {
+    position: "absolute",
+    top: 66,
+    right: 126,
+    width: 42,
+    height: 18,
+    borderRadius: 12,
+    backgroundColor: "rgba(255,255,255,0.22)"
+  },
+  backButton: {
+    position: "absolute",
+    top: spacing.lg,
+    left: spacing.lg,
+    width: 42,
+    height: 42,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 21
+  },
+  backText: {
     color: "#ffffff",
-    fontSize: 15,
-    fontWeight: "900"
+    fontSize: 42,
+    fontWeight: "300",
+    lineHeight: 42
   },
-  timelineBody: {
-    flex: 1,
-    gap: spacing.xs
+  heroTitle: {
+    color: "#ffffff",
+    fontSize: 32,
+    fontWeight: "700",
+    lineHeight: 38
   },
-  timelineTitle: {
-    color: colors.text,
-    fontSize: 16,
-    fontWeight: "900"
+  heroMeta: {
+    color: "#f4f8ff",
+    fontSize: 17,
+    lineHeight: 24
   },
-  timelineText: {
-    color: colors.mutedText,
-    fontSize: 13,
-    lineHeight: 18
+  section: {
+    gap: spacing.md
   },
-  title: {
-    color: colors.text,
-    fontSize: 20,
-    fontWeight: "800"
-  },
-  itemTitle: {
-    flex: 1,
-    color: colors.text,
-    fontSize: 16,
-    fontWeight: "800"
-  },
-  meta: {
-    color: colors.primary,
-    fontSize: 13,
-    fontWeight: "700"
-  },
-  cardTop: {
+  sectionHeader: {
     flexDirection: "row",
-    alignItems: "flex-start",
+    alignItems: "center",
     justifyContent: "space-between",
     gap: spacing.md
   },
-  titleBlock: {
-    flex: 1,
-    gap: spacing.xs
+  sectionTitle: {
+    color: colors.text,
+    fontSize: 24,
+    fontWeight: "700"
   },
-  rowActions: {
-    flexDirection: "row",
+  memoList: {
     gap: spacing.sm
   },
-  text: {
-    color: colors.mutedText,
-    fontSize: 14,
-    lineHeight: 20
-  },
-  notice: {
-    color: colors.primary,
-    fontSize: 13,
-    fontWeight: "800"
-  },
-  addCard: {
-    minHeight: 52,
+  memoRow: {
+    minHeight: 68,
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.md,
     paddingHorizontal: spacing.lg,
-    borderWidth: 1,
-    borderStyle: "dashed",
-    borderColor: colors.primary,
-    borderRadius: 8,
-    backgroundColor: colors.primarySoft
-  },
-  addSymbol: {
-    color: colors.primary,
-    fontSize: 24,
-    fontWeight: "900"
-  },
-  addText: {
-    color: colors.primary,
-    fontSize: 15,
-    fontWeight: "800"
-  },
-  preview: {
-    minHeight: 130,
-    justifyContent: "center",
-    gap: spacing.sm,
-    padding: spacing.lg,
+    borderRadius: radii.md,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 8,
-    backgroundColor: colors.surfaceMuted
+    backgroundColor: colors.surface,
+    ...shadows.card
   },
-  previewImage: {
-    width: "100%",
-    height: 160,
-    borderRadius: 8,
-    backgroundColor: colors.surface
-  },
-  previewTitle: {
-    color: colors.text,
-    fontSize: 16,
-    fontWeight: "900"
-  },
-  previewText: {
-    color: colors.mutedText,
-    fontSize: 13,
-    lineHeight: 18
-  },
-  openFileBox: {
-    minHeight: 42,
+  square: {
+    width: 30,
+    height: 30,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: colors.border,
+    borderRadius: radii.sm,
+    backgroundColor: colors.surface
+  },
+  squareDone: {
+    borderColor: colors.primary,
     backgroundColor: colors.primary
   },
-  openFileText: {
+  squareCheck: {
     color: "#ffffff",
-    fontSize: 14,
-    fontWeight: "900"
+    fontSize: 18,
+    fontWeight: "700"
   },
-  itemList: {
-    gap: spacing.md
+  memoTextBlock: {
+    flex: 1,
+    gap: 2
   },
-  selectedCard: {
-    borderColor: colors.primary
-  },
-  statusBox: {
-    minHeight: 54,
-    justifyContent: "center",
-    gap: 2,
-    paddingHorizontal: spacing.md,
-    borderRadius: 8,
-    borderWidth: 1
-  },
-  successStatusBox: {
-    borderColor: colors.success,
-    backgroundColor: colors.successSoft
-  },
-  neutralStatusBox: {
-    borderColor: colors.border,
-    backgroundColor: colors.neutralSoft
-  },
-  statusLabel: {
-    color: colors.mutedText,
-    fontSize: 12,
-    fontWeight: "800"
-  },
-  statusValue: {
+  memoTitle: {
     color: colors.text,
     fontSize: 17,
-    fontWeight: "900"
+    fontWeight: "600",
+    lineHeight: 23
+  },
+  memoMeta: {
+    color: colors.mutedText,
+    fontSize: 13
+  },
+  memoDone: {
+    color: colors.mutedText,
+    textDecorationLine: "line-through"
+  },
+  circleButton: {
+    width: 50,
+    height: 50,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 25,
+    backgroundColor: colors.primary,
+    ...shadows.card
+  },
+  circleButtonText: {
+    color: "#ffffff",
+    fontSize: 32,
+    fontWeight: "300",
+    lineHeight: 34
+  },
+  ticketCard: {
+    padding: spacing.md
+  },
+  ticketImage: {
+    width: "100%",
+    height: 214,
+    borderRadius: radii.md,
+    backgroundColor: colors.blue
+  },
+  fileFallback: {
+    minHeight: 180,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: spacing.md,
+    borderRadius: radii.md,
+    backgroundColor: colors.surfaceMuted
+  },
+  fileFallbackText: {
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: "600"
+  },
+  ticketActions: {
+    flexDirection: "row",
+    gap: spacing.sm
+  },
+  openButton: {
+    flex: 1,
+    minHeight: 44,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: radii.md,
+    backgroundColor: colors.primary
+  },
+  openButtonText: {
+    color: "#ffffff",
+    fontSize: 14,
+    fontWeight: "700"
+  },
+  deleteButton: {
+    minHeight: 44,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: spacing.md,
+    borderRadius: radii.md,
+    backgroundColor: colors.dangerSoft
+  },
+  deleteButtonText: {
+    color: colors.danger,
+    fontSize: 14,
+    fontWeight: "700"
+  },
+  emptyTicket: {
+    minHeight: 156,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: radii.md,
+    backgroundColor: colors.surfaceMuted
+  },
+  addTicketText: {
+    color: colors.primary,
+    fontSize: 18,
+    fontWeight: "700"
+  },
+  fileChips: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.sm
+  },
+  fileChip: {
+    maxWidth: "48%",
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: radii.md,
+    backgroundColor: colors.surface
+  },
+  fileChipSelected: {
+    backgroundColor: colors.primary
+  },
+  fileChipText: {
+    color: colors.mutedText,
+    fontSize: 13,
+    fontWeight: "600"
+  },
+  fileChipTextSelected: {
+    color: "#ffffff"
+  },
+  tripChecklistCard: {
+    gap: spacing.md
+  },
+  tripChecklistRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md
+  },
+  tripChecklistTitle: {
+    flex: 1,
+    color: colors.text,
+    fontSize: 18,
+    fontWeight: "600"
+  },
+  smallDelete: {
+    width: 34,
+    height: 34,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 17,
+    backgroundColor: colors.dangerSoft
+  },
+  smallDeleteText: {
+    color: colors.danger,
+    fontSize: 24,
+    fontWeight: "600",
+    lineHeight: 26
+  },
+  addChecklistRow: {
+    minHeight: 46,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: radii.md,
+    backgroundColor: colors.primarySoft
+  },
+  addChecklistText: {
+    color: colors.primary,
+    fontSize: 15,
+    fontWeight: "700"
+  },
+  aboutTitle: {
+    color: colors.text,
+    fontSize: 18,
+    fontWeight: "700"
+  },
+  text: {
+    color: colors.mutedText,
+    fontSize: 14,
+    lineHeight: 21
+  },
+  aboutActions: {
+    flexDirection: "row",
+    gap: spacing.sm
+  },
+  editTripButton: {
+    flex: 1,
+    minHeight: 44,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: radii.md,
+    backgroundColor: colors.primarySoft
+  },
+  editTripText: {
+    color: colors.primary,
+    fontSize: 14,
+    fontWeight: "700"
+  },
+  deleteTripButton: {
+    minHeight: 44,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: spacing.md,
+    borderRadius: radii.md,
+    backgroundColor: colors.dangerSoft
+  },
+  deleteTripText: {
+    color: colors.danger,
+    fontSize: 14,
+    fontWeight: "700"
+  },
+  notice: {
+    color: colors.primary,
+    fontSize: 13,
+    fontWeight: "600"
+  },
+  pressed: {
+    opacity: 0.84
   }
 });

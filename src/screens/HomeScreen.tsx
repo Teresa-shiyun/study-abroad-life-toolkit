@@ -1,262 +1,235 @@
 import { router } from "expo-router";
-import { ImageBackground, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { AppIcon } from "../components/AppIcon";
+import { useState } from "react";
+import { ImageBackground, Pressable, StyleSheet, Text, View } from "react-native";
+import { AppIcon, type AppIconName } from "../components/AppIcon";
 import { Card } from "../components/Card";
-import { Pill } from "../components/Pill";
+import { CloudPuppyBadge } from "../components/CloudPuppyBadge";
 import { Screen } from "../components/Screen";
-import { Section } from "../components/Section";
 import { useAppData } from "../data/AppDataContext";
+import { bannerCampusImage, bannerLondonImage, bannerParisImage } from "../data/bannerImages";
 import { useLanguage } from "../i18n";
 import { routes } from "../navigation/routes";
-import { formatCurrency, formatDateRange, getChecklistProgress } from "../utils/format";
-import { getDocumentStatusTone } from "../utils/statusTone";
+import { deriveDocumentStatus } from "../utils/documentStatus";
+import { formatCurrency, formatDateRange, getChecklistProgress, getProgressPercent } from "../utils/format";
 import { colors, radii, shadows, spacing } from "../utils/theme";
 
 const bannerSlides = [
   {
-    image:
-      "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=900&q=80",
-    titleKey: "bannerCampusTitle",
-    subtitleKey: "bannerCampusSubtitle"
+    image: bannerParisImage,
+    zh: "巴黎周末旅行",
+    en: "Paris weekend"
   },
   {
-    image:
-      "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=900&q=80",
-    titleKey: "bannerTravelTitle",
-    subtitleKey: "bannerTravelSubtitle"
+    image: bannerLondonImage,
+    zh: "伦敦生活",
+    en: "London life"
   },
   {
-    image:
-      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80",
-    titleKey: "bannerCityTitle",
-    subtitleKey: "bannerCitySubtitle"
+    image: bannerCampusImage,
+    zh: "校园日常",
+    en: "Campus days"
   }
 ] as const;
 
-const quickModules = [
-  { labelKey: "checklist", hintKey: "moduleChecklistHint", icon: "list", route: routes.checklist, tone: "blue" },
-  { labelKey: "documents", hintKey: "moduleDocumentsHint", icon: "file", route: routes.documents, tone: "accent" },
-  { labelKey: "travel", hintKey: "moduleTravelHint", icon: "transport", route: routes.travel, tone: "success" },
-  { labelKey: "budget", hintKey: "moduleBudgetHint", icon: "wallet", route: routes.budget, tone: "warning" },
-  { labelKey: "emergencyContacts", hintKey: "moduleEmergencyHint", icon: "emergency", route: routes.emergency, tone: "danger" },
-  { labelKey: "language", hintKey: "moduleLanguageHint", icon: "language", route: routes.settings, tone: "primary" }
-] as const;
+const quickModules: Array<{
+  fallbackZh: string;
+  fallbackEn: string;
+  icon: AppIconName;
+  route: string;
+  tone: "accent" | "blue" | "lavender" | "danger";
+}> = [
+  { fallbackZh: "文件", fallbackEn: "Files", icon: "file", route: routes.documents, tone: "accent" },
+  { fallbackZh: "旅行", fallbackEn: "Travel", icon: "transport", route: routes.travel, tone: "blue" },
+  { fallbackZh: "清单", fallbackEn: "Checklist", icon: "list", route: routes.checklist, tone: "lavender" },
+  { fallbackZh: "紧急", fallbackEn: "Emergency", icon: "emergency", route: routes.emergency, tone: "danger" }
+];
 
-const moduleIconColors = {
-  primary: colors.primary,
-  blue: colors.blue,
-  accent: colors.accent,
-  success: colors.success,
-  warning: colors.warning,
-  danger: colors.danger
-} as const;
+const toneStyles = {
+  accent: {
+    backgroundColor: colors.accentSoft,
+    color: colors.accent
+  },
+  blue: {
+    backgroundColor: colors.blueSoft,
+    color: colors.blue
+  },
+  lavender: {
+    backgroundColor: colors.lavenderSoft,
+    color: colors.lavender
+  },
+  danger: {
+    backgroundColor: colors.dangerSoft,
+    color: colors.danger
+  }
+};
 
 export function HomeScreen() {
   const { language, t } = useLanguage();
-  const { budgetItems, checklistItems, documents, emergencyContacts, monthlyBudget, trips } = useAppData();
+  const { budgetItems, checklistItems, documents, monthlyBudget, trips } = useAppData();
   const completedChecklist = checklistItems.filter((item) => item.status === "done").length;
-  const documentNeedsAttention = documents.filter((item) => item.status !== "prepared");
+  const documentNeedsAttention = documents.filter((item) => deriveDocumentStatus(item) !== "prepared").length;
   const spent = budgetItems.reduce((sum, item) => sum + item.amount, 0);
   const remaining = monthlyBudget.amount - spent;
   const upcomingTrip = trips[0];
-  const recentFile = documents[1] ?? documents[0];
-  const emergencyContact = emergencyContacts[0];
+  const [activeBanner, setActiveBanner] = useState(0);
+  const itineraryTotal = upcomingTrip?.itinerary.length ?? 0;
+  const itineraryDone = upcomingTrip?.itinerary.filter((item) => item.isDone).length ?? 0;
+  const tripPercent = getProgressPercent(itineraryDone, itineraryTotal);
+
+  function pick(zh: string, en: string) {
+    return language === "zh" ? zh : en;
+  }
+
+  function moveBanner(direction: -1 | 1) {
+    setActiveBanner((current) => (current + direction + bannerSlides.length) % bannerSlides.length);
+  }
+
+  const currentBanner = bannerSlides[activeBanner];
 
   return (
     <Screen>
-      <View style={styles.topBar}>
-        <View style={styles.topText}>
-          <Text style={styles.eyebrow}>{t("homeGreeting")}</Text>
-          <Text style={styles.appName}>{t("appDisplayName")}</Text>
-          <Text style={styles.prompt}>{t("homePrompt")}</Text>
+      <View style={styles.screen}>
+        <View style={styles.topLogoRow}>
+          <Pressable style={styles.profileButton} onPress={() => router.push(routes.profile)}>
+            <CloudPuppyBadge size={48} />
+          </Pressable>
         </View>
-        <Pressable style={styles.languageChip} onPress={() => router.push(routes.settings)}>
-          <Text style={styles.languageText}>{language === "zh" ? "中文" : "EN"}</Text>
-        </Pressable>
-      </View>
 
-      <Pressable style={styles.searchBar} onPress={() => router.push(routes.search)}>
-        <AppIcon name="search" color={colors.primary} size={22} />
-        <Text style={styles.searchText}>{t("searchPlaceholder")}</Text>
-      </Pressable>
-
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.bannerRail}
-        contentContainerStyle={styles.bannerContent}
-      >
-        {bannerSlides.map((slide) => (
+        <View style={styles.bannerWrap}>
           <ImageBackground
-            key={slide.titleKey}
-            source={{ uri: slide.image }}
+            key={activeBanner}
+            source={currentBanner.image}
             imageStyle={styles.bannerImage}
             style={styles.banner}
           >
-            <View style={styles.bannerShade}>
-              <Text style={styles.bannerTitle}>{t(slide.titleKey)}</Text>
-              <Text style={styles.bannerSubtitle}>{t(slide.subtitleKey)}</Text>
-            </View>
-          </ImageBackground>
-        ))}
-      </ScrollView>
-
-      <Section title={t("quickActions")}>
-        <View style={styles.moduleGrid}>
-          {quickModules.map((module) => (
-            <Pressable
-              key={module.labelKey}
-              style={({ pressed }) => [styles.moduleCard, pressed && styles.pressed]}
-              onPress={() => router.push(module.route)}
-            >
-              <View style={[styles.moduleBadge, styles[`${module.tone}Badge`]]}>
-                <AppIcon
-                  name={module.icon}
-                  color={moduleIconColors[module.tone]}
-                  size={28}
-                />
-              </View>
-              <View style={styles.moduleTextWrap}>
-                <Text style={styles.moduleTitle}>{t(module.labelKey)}</Text>
-                <Text style={styles.moduleHint}>{t(module.hintKey)}</Text>
-              </View>
+            <Pressable style={[styles.bannerButton, styles.bannerButtonLeft]} onPress={() => moveBanner(-1)}>
+              <Text style={styles.bannerButtonText}>‹</Text>
             </Pressable>
-          ))}
-        </View>
-      </Section>
-
-      <Section title={t("todayOverview")}>
-        <View style={styles.summaryGrid}>
-          <Card style={styles.summaryCard}>
-            <Text style={styles.statValue}>
-              {getChecklistProgress(completedChecklist, checklistItems.length)}
-            </Text>
-            <Text style={styles.statLabel}>{t("checklistProgress")}</Text>
-          </Card>
-          <Card style={styles.summaryCard}>
-            <Text style={styles.statValue}>{documentNeedsAttention.length}</Text>
-            <Text style={styles.statLabel}>{t("documentsNeedAttention")}</Text>
-          </Card>
-          <Card style={styles.summaryCard}>
-            <Text style={styles.statValue}>{formatCurrency(remaining)}</Text>
-            <Text style={styles.statLabel}>{t("remainingThisMonth")}</Text>
-          </Card>
-          <Card style={styles.summaryCard}>
-            <Text style={styles.statValue}>{trips.length}</Text>
-            <Text style={styles.statLabel}>{t("plannedTrips")}</Text>
-          </Card>
-        </View>
-      </Section>
-
-      {upcomingTrip ? (
-        <Section title={t("upcomingTrip")}>
-          <Card onPress={() => router.push(routes.travelDetail(upcomingTrip.id))}>
-            <Text style={styles.cardTitle}>{t(`mock.${upcomingTrip.id}`, upcomingTrip.name)}</Text>
-            <Text style={styles.cardText}>{upcomingTrip.destination}</Text>
-            <Text style={styles.cardText}>
-              {formatDateRange(upcomingTrip.startDate, upcomingTrip.endDate)}
-            </Text>
-          </Card>
-        </Section>
-      ) : null}
-
-      {recentFile ? (
-        <Section title={t("recentFile")}>
-          <Card onPress={() => router.push(routes.documentDetail(recentFile.id))}>
-            <View style={styles.rowBetween}>
-              <Text style={styles.cardTitle}>{t(`mock.${recentFile.id}`, recentFile.title)}</Text>
-              <Pill
-                label={t(`documentStatus.${recentFile.status}`)}
-                tone={getDocumentStatusTone(recentFile.status)}
+            <Pressable style={[styles.bannerButton, styles.bannerButtonRight]} onPress={() => moveBanner(1)}>
+              <Text style={styles.bannerButtonText}>›</Text>
+            </Pressable>
+          </ImageBackground>
+          <View style={styles.dots}>
+            {bannerSlides.map((slide, index) => (
+              <Pressable
+                key={slide.en}
+                style={[styles.dot, index === activeBanner && styles.dotActive]}
+                onPress={() => setActiveBanner(index)}
               />
-            </View>
-            <Text style={styles.cardText}>{recentFile.fileName ?? t("noFileSelected")}</Text>
-          </Card>
-        </Section>
-      ) : null}
+            ))}
+          </View>
+        </View>
 
-      {emergencyContact ? (
-        <Section title={t("emergencyShortcut")}>
-          <Card onPress={() => router.push(routes.emergency)}>
-            <Text style={styles.cardTitle}>{t(`mock.${emergencyContact.id}`, emergencyContact.name)}</Text>
-            <Text style={styles.cardText}>{emergencyContact.phone}</Text>
-            <Text style={styles.cardText}>{emergencyContact.email}</Text>
+        <View style={styles.quickGrid}>
+          {quickModules.map((module) => {
+            const tone = toneStyles[module.tone];
+
+            return (
+              <Pressable
+                key={module.fallbackEn}
+                style={({ pressed }) => [styles.quickCard, pressed && styles.pressed]}
+                onPress={() => router.push(module.route)}
+              >
+                <View style={[styles.quickIcon, { backgroundColor: tone.backgroundColor }]}>
+                  <AppIcon name={module.icon} color={tone.color} size={29} />
+                </View>
+                <Text style={styles.quickLabel}>{pick(module.fallbackZh, module.fallbackEn)}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+
+        {upcomingTrip ? (
+          <Pressable
+            style={({ pressed }) => [styles.tripCard, pressed && styles.pressed]}
+            onPress={() => router.push(routes.travelDetail(upcomingTrip.id))}
+          >
+            <View style={styles.tripTop}>
+              <View>
+                <Text style={styles.tripKicker}>{pick("即将到来", "Upcoming")}</Text>
+                <Text style={styles.tripTitle}>{t(`seed.${upcomingTrip.id}`, upcomingTrip.name)}</Text>
+              </View>
+              <Text style={styles.arrow}>›</Text>
+            </View>
+            <Text style={styles.tripMeta}>
+              {upcomingTrip.destination} · {formatDateRange(upcomingTrip.startDate, upcomingTrip.endDate)}
+            </Text>
+            <View style={styles.progressRow}>
+              <View style={styles.progressTrack}>
+                <View style={[styles.progressFill, { width: `${tripPercent}%` }]} />
+              </View>
+              <Text style={styles.progressText}>{tripPercent}%</Text>
+            </View>
+          </Pressable>
+        ) : null}
+
+        <View style={styles.statGrid}>
+          <Card style={styles.statCard} onPress={() => router.push(routes.documents)}>
+            <View style={[styles.smallIcon, { backgroundColor: colors.accentSoft }]}>
+              <AppIcon name="file" color={colors.accent} size={20} />
+            </View>
+            <Text style={styles.statTitle}>{pick("文件状态", "File status")}</Text>
+            <Text style={styles.statValue}>{documentNeedsAttention}</Text>
+            <Text style={styles.statHint}>{pick("个待处理文件", "documents to check")}</Text>
           </Card>
-        </Section>
-      ) : null}
+          <Card style={styles.statCard} onPress={() => router.push(routes.checklist)}>
+            <View style={[styles.smallIcon, { backgroundColor: colors.blueSoft }]}>
+              <AppIcon name="list" color={colors.blue} size={20} />
+            </View>
+            <Text style={styles.statTitle}>{pick("清单进度", "Checklist")}</Text>
+            <Text style={styles.statValue}>{getChecklistProgress(completedChecklist, checklistItems.length)}</Text>
+            <Text style={styles.statHint}>{pick("已完成任务", "completed tasks")}</Text>
+          </Card>
+        </View>
+
+        <Card style={styles.budgetCard} onPress={() => router.push(routes.budget)}>
+          <View style={[styles.smallIcon, { backgroundColor: colors.warningSoft }]}>
+            <AppIcon name="wallet" color={colors.warning} size={20} />
+          </View>
+          <Text style={styles.statTitle}>{pick("本月预算", "Monthly budget")}</Text>
+          <Text style={styles.budgetValue}>
+            {formatCurrency(remaining, monthlyBudget.currency)}
+            <Text style={styles.budgetTotal}> / {formatCurrency(monthlyBudget.amount, monthlyBudget.currency)}</Text>
+          </Text>
+          <View style={styles.budgetTrack}>
+            <View
+              style={[
+                styles.budgetFill,
+                { width: `${Math.min(100, getProgressPercent(spent, monthlyBudget.amount))}%` }
+              ]}
+            />
+          </View>
+        </Card>
+      </View>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  topBar: {
+  screen: {
+    gap: spacing.lg,
+    backgroundColor: colors.background
+  },
+  topLogoRow: {
     flexDirection: "row",
-    alignItems: "flex-start",
+    alignItems: "center",
     justifyContent: "space-between",
-    gap: spacing.md
+    minHeight: 52
   },
-  topText: {
-    flex: 1,
-    gap: spacing.xs
-  },
-  eyebrow: {
-    color: colors.accent,
-    fontSize: 13,
-    fontWeight: "800"
-  },
-  appName: {
-    color: colors.text,
-    fontSize: 25,
-    fontWeight: "800",
-    lineHeight: 32
-  },
-  prompt: {
-    color: colors.mutedText,
-    fontSize: 14,
-    lineHeight: 20
-  },
-  languageChip: {
-    minWidth: 50,
-    minHeight: 34,
+  profileButton: {
+    width: 56,
+    height: 56,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: radii.sm,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border
+    borderRadius: 28,
+    backgroundColor: colors.surface
   },
-  languageText: {
-    color: colors.primary,
-    fontSize: 13,
-    fontWeight: "800"
-  },
-  searchBar: {
-    minHeight: 44,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: radii.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-    ...shadows.card
-  },
-  searchText: {
-    flex: 1,
-    color: colors.mutedText,
-    fontSize: 14
-  },
-  bannerRail: {
-    marginHorizontal: -spacing.lg
-  },
-  bannerContent: {
-    gap: spacing.md,
-    paddingHorizontal: spacing.lg
+  bannerWrap: {
+    gap: spacing.sm
   },
   banner: {
-    width: 320,
-    height: 148,
+    width: "100%",
+    height: 178,
     overflow: "hidden",
     borderRadius: radii.md,
     backgroundColor: colors.primary,
@@ -265,115 +238,185 @@ const styles = StyleSheet.create({
   bannerImage: {
     borderRadius: radii.md
   },
-  bannerShade: {
-    flex: 1,
-    justifyContent: "flex-end",
-    gap: spacing.xs,
-    padding: spacing.lg,
-    backgroundColor: "rgba(10, 20, 30, 0.36)"
+  bannerButton: {
+    position: "absolute",
+    top: 65,
+    width: 42,
+    height: 48,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 21,
+    backgroundColor: "rgba(255,255,255,0.72)"
   },
-  bannerTitle: {
-    color: "#ffffff",
-    fontSize: 20,
-    fontWeight: "800",
-    lineHeight: 26
+  bannerButtonLeft: {
+    left: spacing.md
   },
-  bannerSubtitle: {
-    color: "#eef4f7",
-    fontSize: 13,
-    lineHeight: 18
+  bannerButtonRight: {
+    right: spacing.md
   },
-  moduleGrid: {
+  bannerButtonText: {
+    color: colors.text,
+    fontSize: 34,
+    fontWeight: "300",
+    lineHeight: 36
+  },
+  dots: {
     flexDirection: "row",
-    flexWrap: "wrap",
+    alignSelf: "center",
+    gap: spacing.xs
+  },
+  dot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: colors.border
+  },
+  dotActive: {
+    width: 18,
+    backgroundColor: colors.primary
+  },
+  quickGrid: {
+    flexDirection: "row",
     gap: spacing.md
   },
-  moduleCard: {
-    width: "47%",
-    minHeight: 104,
+  quickCard: {
+    flex: 1,
+    minHeight: 108,
+    alignItems: "center",
+    justifyContent: "center",
     gap: spacing.sm,
-    padding: spacing.md,
     borderRadius: radii.md,
     borderWidth: 1,
     borderColor: colors.border,
     backgroundColor: colors.surface,
     ...shadows.card
   },
-  pressed: {
-    opacity: 0.82
-  },
-  moduleBadge: {
-    width: 40,
-    height: 40,
+  quickIcon: {
+    width: 56,
+    height: 56,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: radii.md
+    borderRadius: 28
   },
-  moduleTextWrap: {
-    gap: 2
-  },
-  moduleTitle: {
+  quickLabel: {
     color: colors.text,
     fontSize: 15,
-    fontWeight: "800"
+    fontWeight: "500"
   },
-  moduleHint: {
-    color: colors.mutedText,
-    fontSize: 12,
-    lineHeight: 16
+  tripCard: {
+    gap: spacing.md,
+    padding: spacing.lg,
+    borderRadius: radii.md,
+    backgroundColor: colors.primary,
+    ...shadows.card
   },
-  primaryBadge: {
-    backgroundColor: colors.primarySoft
-  },
-  blueBadge: {
-    backgroundColor: colors.blueSoft
-  },
-  accentBadge: {
-    backgroundColor: colors.accentSoft
-  },
-  successBadge: {
-    backgroundColor: colors.successSoft
-  },
-  warningBadge: {
-    backgroundColor: colors.warningSoft
-  },
-  dangerBadge: {
-    backgroundColor: colors.dangerSoft
-  },
-  summaryGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.md
-  },
-  summaryCard: {
-    width: "47%",
-    minHeight: 90
-  },
-  statValue: {
-    color: colors.primary,
-    fontSize: 23,
-    fontWeight: "800"
-  },
-  statLabel: {
-    color: colors.mutedText,
-    fontSize: 13,
-    lineHeight: 18
-  },
-  cardTitle: {
-    flex: 1,
-    color: colors.text,
-    fontSize: 16,
-    fontWeight: "800"
-  },
-  cardText: {
-    color: colors.mutedText,
-    fontSize: 14,
-    lineHeight: 20
-  },
-  rowBetween: {
+  tripTop: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     gap: spacing.md
+  },
+  tripKicker: {
+    color: "#edf5ff",
+    fontSize: 14,
+    fontWeight: "500"
+  },
+  tripTitle: {
+    color: "#ffffff",
+    fontSize: 25,
+    fontWeight: "600",
+    lineHeight: 32
+  },
+  arrow: {
+    color: "#ffffff",
+    fontSize: 36,
+    fontWeight: "300"
+  },
+  tripMeta: {
+    color: "#f7fbff",
+    fontSize: 15,
+    lineHeight: 22
+  },
+  progressRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md
+  },
+  progressTrack: {
+    flex: 1,
+    height: 10,
+    overflow: "hidden",
+    borderRadius: 5,
+    backgroundColor: "rgba(255,255,255,0.32)"
+  },
+  progressFill: {
+    height: "100%",
+    borderRadius: 5,
+    backgroundColor: "#ffffff"
+  },
+  progressText: {
+    minWidth: 42,
+    color: "#ffffff",
+    fontSize: 15,
+    fontWeight: "500",
+    textAlign: "right"
+  },
+  statGrid: {
+    flexDirection: "row",
+    gap: spacing.md
+  },
+  statCard: {
+    flex: 1,
+    minHeight: 126
+  },
+  smallIcon: {
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 20
+  },
+  statTitle: {
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: "500"
+  },
+  statValue: {
+    color: colors.text,
+    fontSize: 32,
+    fontWeight: "500",
+    lineHeight: 38
+  },
+  statHint: {
+    color: colors.mutedText,
+    fontSize: 14
+  },
+  budgetCard: {
+    minHeight: 146
+  },
+  budgetValue: {
+    color: colors.text,
+    fontSize: 28,
+    fontWeight: "500",
+    lineHeight: 36
+  },
+  budgetTotal: {
+    color: colors.mutedText,
+    fontSize: 16,
+    fontWeight: "400"
+  },
+  budgetTrack: {
+    height: 12,
+    overflow: "hidden",
+    borderRadius: 6,
+    backgroundColor: colors.surfaceMuted
+  },
+  budgetFill: {
+    height: "100%",
+    borderRadius: 6,
+    backgroundColor: colors.accent
+  },
+  pressed: {
+    opacity: 0.84
   }
 });
