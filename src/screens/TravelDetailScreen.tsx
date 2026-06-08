@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { ActionIconButton } from "../components/ActionIconButton";
 import { Card } from "../components/Card";
 import { ConfirmDialog } from "../components/ConfirmDialog";
@@ -12,7 +12,7 @@ import { useAppData } from "../data/AppDataContext";
 import { useLanguage } from "../i18n";
 import { routes } from "../navigation/routes";
 import type { TravelFile } from "../types";
-import { openPickedFile, pickFile } from "../utils/filePicker";
+import { isImageFile, openPickedFile, pickFile } from "../utils/filePicker";
 import { formatDateRange } from "../utils/format";
 import { colors, spacing } from "../utils/theme";
 
@@ -49,6 +49,11 @@ export function TravelDetailScreen() {
   }
 
   const selectedFile = trip.files.find((file) => file.id === selectedFileId) ?? trip.files[0];
+  const selectedFileIsImage =
+    selectedFile &&
+    selectedFile.fileUri &&
+    !selectedFile.fileUri.startsWith("local://") &&
+    isImageFile(selectedFile.fileName ?? selectedFile.title, selectedFile.fileType);
   const itineraryItems = [
     {
       step: "1",
@@ -189,6 +194,13 @@ export function TravelDetailScreen() {
         <View style={styles.preview}>
           {selectedFile ? (
             <>
+              {selectedFileIsImage ? (
+                <Image
+                  source={{ uri: selectedFile.fileUri }}
+                  style={styles.previewImage}
+                  resizeMode="cover"
+                />
+              ) : null}
               <Text style={styles.previewTitle}>{selectedFile.fileName ?? selectedFile.title}</Text>
               <Text style={styles.previewText}>{t(`travelFileCategory.${selectedFile.category}`)}</Text>
               <Text style={styles.previewText}>{t("fileUploadHint")}</Text>
@@ -393,6 +405,12 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     borderRadius: 8,
     backgroundColor: colors.surfaceMuted
+  },
+  previewImage: {
+    width: "100%",
+    height: 160,
+    borderRadius: 8,
+    backgroundColor: colors.surface
   },
   previewTitle: {
     color: colors.text,

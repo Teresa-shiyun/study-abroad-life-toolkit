@@ -55,3 +55,11 @@ export function openPickedFile(uri?: string) {
   window.open(uri, "_blank", "noopener,noreferrer");
   return true;
 }
+
+export function isImageFile(fileName?: string, fileType?: string) {
+  if (fileType?.startsWith("image/")) {
+    return true;
+  }
+
+  return Boolean(fileName?.match(/\.(png|jpg|jpeg|webp|gif)$/i));
+}

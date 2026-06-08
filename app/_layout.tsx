@@ -2,6 +2,7 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { AppDataProvider } from "../src/data/AppDataContext";
 import { LanguageProvider, useLanguage } from "../src/i18n";
+import { colors } from "../src/utils/theme";
 
 export default function RootLayout() {
   return (
@@ -21,10 +22,10 @@ function RootStack() {
       <StatusBar style="dark" />
       <Stack
         screenOptions={{
-          headerStyle: { backgroundColor: "#f8fafc" },
-          headerTitleStyle: { color: "#172033", fontWeight: "700" },
-          headerTintColor: "#245c73",
-          contentStyle: { backgroundColor: "#f8fafc" }
+          headerStyle: { backgroundColor: colors.background },
+          headerTitleStyle: { color: colors.text, fontWeight: "700" },
+          headerTintColor: colors.primary,
+          contentStyle: { backgroundColor: colors.background }
         }}
       >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Image, StyleSheet, Text, View } from "react-native";
 import { AppButton } from "../components/AppButton";
 import { Card } from "../components/Card";
 import { ConfirmDialog } from "../components/ConfirmDialog";
@@ -10,7 +10,7 @@ import { Screen } from "../components/Screen";
 import { useAppData } from "../data/AppDataContext";
 import { useLanguage } from "../i18n";
 import { routes } from "../navigation/routes";
-import { openPickedFile, pickFile } from "../utils/filePicker";
+import { isImageFile, openPickedFile, pickFile } from "../utils/filePicker";
 import { getDocumentStatusTone } from "../utils/statusTone";
 import { colors, spacing } from "../utils/theme";
 
@@ -21,6 +21,11 @@ export function DocumentDetailScreen() {
   const [notice, setNotice] = useState<string | undefined>();
   const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
   const document = documents.find((item) => item.id === id) ?? documents[0];
+  const documentIsImage =
+    document &&
+    document.fileUri &&
+    !document.fileUri.startsWith("local://") &&
+    isImageFile(document.fileName, document.fileType);
 
   if (!document) {
     return (
@@ -78,6 +83,13 @@ export function DocumentDetailScreen() {
 
       <View style={styles.preview}>
         <Text style={styles.previewTitle}>{t("mockFilePreview")}</Text>
+        {documentIsImage ? (
+          <Image
+            source={{ uri: document.fileUri }}
+            style={styles.previewImage}
+            resizeMode="cover"
+          />
+        ) : null}
         <Text style={styles.previewText}>{document.fileName ?? t("noFileSelected")}</Text>
         <Text style={styles.previewText}>{t("fileUploadHint")}</Text>
         <AppButton onPress={handleOpenFile} variant="secondary">{t("openFile")}</AppButton>
@@ -141,6 +153,12 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 16,
     fontWeight: "800"
+  },
+  previewImage: {
+    width: "100%",
+    height: 180,
+    borderRadius: 8,
+    backgroundColor: colors.surface
   },
   previewText: {
     color: colors.mutedText,

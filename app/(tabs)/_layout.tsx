@@ -1,6 +1,7 @@
 import { Tabs } from "expo-router";
 import { AppIcon } from "../../src/components/AppIcon";
 import { useLanguage } from "../../src/i18n";
+import { colors } from "../../src/utils/theme";
 
 export default function TabLayout() {
   const { t } = useLanguage();
@@ -8,14 +9,14 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        headerStyle: { backgroundColor: "#f8fafc" },
-        headerTitleStyle: { color: "#172033", fontWeight: "700" },
-        headerTintColor: "#245c73",
-        tabBarActiveTintColor: "#245c73",
-        tabBarInactiveTintColor: "#6b7280",
+        headerStyle: { backgroundColor: colors.background },
+        headerTitleStyle: { color: colors.text, fontWeight: "700" },
+        headerTintColor: colors.primary,
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.mutedText,
         tabBarStyle: {
-          backgroundColor: "#ffffff",
-          borderTopColor: "#dfe7ee"
+          backgroundColor: colors.surface,
+          borderTopColor: colors.border
         }
       }}
     >
